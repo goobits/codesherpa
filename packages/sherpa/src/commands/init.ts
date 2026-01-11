@@ -186,8 +186,23 @@ function setupClaudeHooks(cwd: string, force: boolean): void {
 
 function setupMcpConfig(cwd: string, force: boolean): void {
 	const mcpPath = join(cwd, '.mcp.json')
+	const settingsPath = join(cwd, '.claude/settings.local.json')
 	const nodePath = getNodePath()
 	const reviewerPath = getReviewerPath()
+
+	// 1. Clean up stale MCP config from settings.local.json (wrong location)
+	if (existsSync(settingsPath)) {
+		try {
+			const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'))
+			if (settings.mcpServers) {
+				delete settings.mcpServers
+				writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`)
+				console.log('Cleaned up stale MCP config from settings.local.json')
+			}
+		} catch {
+			// Ignore parse errors
+		}
+	}
 
 	const mcpConfig: McpServer = {
 		type: 'stdio',
@@ -196,46 +211,41 @@ function setupMcpConfig(cwd: string, force: boolean): void {
 		env: {}
 	}
 
-	// Try using claude CLI first (most reliable)
+	// 2. Try using claude CLI first (most reliable)
 	try {
-		// Check if server already exists
-		const listOutput = execSync('claude mcp list 2>&1', { encoding: 'utf-8', cwd })
-		if (listOutput.includes('cerebras-reviewer') && !force) {
-			console.log('MCP server cerebras-reviewer already configured')
-			return
-		}
-
-		// Remove existing and add fresh
-		if (force || listOutput.includes('cerebras-reviewer')) {
-			execSync('claude mcp remove cerebras-reviewer -s project 2>/dev/null || true', { cwd, stdio: 'pipe' })
-		}
-
+		// Remove existing and add fresh (always, to ensure correct config)
+		execSync('claude mcp remove cerebras-reviewer -s project 2>/dev/null || true', { cwd, stdio: 'pipe' })
 		execSync(`claude mcp add cerebras-reviewer -s project ${nodePath} ${reviewerPath}`, {
 			cwd,
 			stdio: 'pipe'
 		})
-		console.log('Added MCP server via claude CLI')
+		console.log('Configured MCP server via claude CLI')
 		return
 	} catch {
 		// Claude CLI not available, fall back to manual config
 	}
 
-	// Manual .mcp.json creation
+	// 3. Manual .mcp.json creation (always overwrite cerebras-reviewer to fix any issues)
 	let mcpJson: McpJson = { mcpServers: {} }
 	if (existsSync(mcpPath)) {
 		try {
 			mcpJson = JSON.parse(readFileSync(mcpPath, 'utf-8'))
 		} catch {
-			console.warn('Warning: Could not parse existing .mcp.json')
+			// Start fresh if parse fails
 		}
 	}
 
-	if (!mcpJson.mcpServers['cerebras-reviewer'] || force) {
-		mcpJson.mcpServers['cerebras-reviewer'] = mcpConfig
-		writeFileSync(mcpPath, `${JSON.stringify(mcpJson, null, 2)}\n`)
-		console.log('Created .mcp.json with cerebras-reviewer')
-	} else {
-		console.log('.mcp.json already has cerebras-reviewer')
+	mcpJson.mcpServers['cerebras-reviewer'] = mcpConfig
+	writeFileSync(mcpPath, `${JSON.stringify(mcpJson, null, 2)}\n`)
+	console.log('Configured .mcp.json with cerebras-reviewer')
+
+	// 4. Verify it works
+	try {
+		const testMsg = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0.0"}}}'
+		execSync(`echo '${testMsg}' | "${nodePath}" "${reviewerPath}"`, { stdio: 'pipe', timeout: 5000 })
+		console.log('Verified MCP server responds correctly')
+	} catch {
+		console.warn('Warning: MCP server test failed - check paths and try restarting Claude Code')
 	}
 }
 
