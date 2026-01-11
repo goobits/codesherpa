@@ -48,6 +48,12 @@ const GUARD_CONFIG = {
   maxScratchSizeMB: 50
 }
 
+const REVIEW_COMMAND = `# review
+
+Use the MCP tool \`review\` with the arguments provided by the user.
+If no arguments are given, ask for the paths or mode.
+`
+
 const LINT_STAGED_CONFIG = {
   '*.{js,jsx,ts,tsx,json,md,yml,yaml}': ['prettier --write']
 }
@@ -99,16 +105,19 @@ export function runInit(): void {
   // 1. Create .claude directory and hooks config
   setupClaudeHooks(cwd, force)
 
-  // 2. Set up MCP server in .mcp.json
+  // 2. Create .claude commands
+  setupClaudeCommands(cwd, force)
+
+  // 3. Set up MCP server in .mcp.json
   setupMcpConfig(cwd, force)
 
-  // 3. Set up husky
+  // 4. Set up husky
   setupHusky(cwd, force)
 
-  // 4. Set up lint-staged
+  // 5. Set up lint-staged
   setupLintStaged(cwd, force)
 
-  // 5. Check for gitleaks
+  // 6. Check for gitleaks
   checkGitleaks()
 
   // Print success
@@ -117,6 +126,7 @@ export function runInit(): void {
   console.log('What was configured:')
   console.log('  [x] .claude/settings.local.json - Hooks')
   console.log('  [x] .claude/guard.json - Guard config')
+  console.log('  [x] .claude/commands/review.md - Slash command')
   console.log('  [x] .mcp.json - MCP servers')
   console.log('  [x] .husky/pre-commit - Git pre-commit hook')
   console.log('  [x] .lintstagedrc.json - Lint staged files')
@@ -184,6 +194,23 @@ function setupClaudeHooks(cwd: string, force: boolean): void {
     console.log('Updated .claude/settings.local.json with hooks')
   } else {
     console.log('Claude hooks already configured')
+  }
+}
+
+function setupClaudeCommands(cwd: string, force: boolean): void {
+  const claudeDir = join(cwd, '.claude')
+  const commandsDir = join(claudeDir, 'commands')
+  const reviewCommandPath = join(commandsDir, 'review.md')
+
+  if (!existsSync(commandsDir)) {
+    mkdirSync(commandsDir, { recursive: true })
+  }
+
+  if (!existsSync(reviewCommandPath) || force) {
+    writeFileSync(reviewCommandPath, REVIEW_COMMAND)
+    console.log('Created .claude/commands/review.md')
+  } else {
+    console.log('.claude/commands/review.md already exists')
   }
 }
 
