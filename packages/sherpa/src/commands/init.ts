@@ -19,12 +19,6 @@ interface ClaudeSettings {
 	[key: string]: unknown;
 }
 
-interface PackageJson {
-	scripts?: Record<string, string>;
-	devDependencies?: Record<string, string>;
-	[key: string]: unknown;
-}
-
 const CLAUDE_HOOK_CONFIG = {
 	PreToolUse: [ { matcher: 'Bash', command: 'sherpa pre' } ],
 	PostToolUse: [ { matcher: 'Bash', command: 'sherpa post' } ]
@@ -155,10 +149,9 @@ function setupHusky(cwd: string, force: boolean): void {
 		return
 	}
 
-	// Read package.json
-	let pkg: PackageJson
+	// Verify package.json is readable
 	try {
-		pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+		JSON.parse(readFileSync(pkgPath, 'utf-8'))
 	} catch {
 		console.warn('Warning: Could not parse package.json')
 		return
@@ -173,7 +166,7 @@ function setupHusky(cwd: string, force: boolean): void {
 			console.log('Initializing husky...')
 			execSync('npx husky init', { cwd, stdio: 'pipe' })
 			console.log('Initialized husky')
-		} catch(error) {
+		} catch {
 			console.warn('Could not initialize husky automatically')
 			console.warn('Run: npx husky init')
 			return

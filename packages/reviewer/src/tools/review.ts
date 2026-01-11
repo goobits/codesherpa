@@ -2,7 +2,7 @@
  * cerebras_review tool - Code review with line citations
  */
 
-import { chat, CODE_EXTENSIONS,findFiles, readFilesWithLimit } from '@goobits/sherpa-core'
+import { chat, findFiles, readFilesWithLimit } from '@goobits/sherpa-core'
 import { statSync } from 'fs'
 
 import {

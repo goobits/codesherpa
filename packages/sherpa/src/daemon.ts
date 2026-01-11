@@ -7,10 +7,8 @@
  */
 
 import { loadConfig } from '@goobits/sherpa-core'
-import { existsSync, readFileSync,unlinkSync } from 'fs'
+import { existsSync, unlinkSync } from 'fs'
 import { createServer, type Socket } from 'net'
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
 
 import { offloadOutput } from './commands/post.js'
 import { checkBashCommand } from './commands/pre.js'
@@ -77,7 +75,7 @@ function handleConnection(socket: Socket): void {
 
 			socket.write(JSON.stringify(response))
 			socket.end()
-		} catch (err) {
+		} catch(err) {
 			// Check if it's a syntax error (invalid JSON) vs incomplete JSON
 			if (err instanceof SyntaxError && !err.message.includes('end of JSON')) {
 				// Invalid JSON structure - reset buffer and report error

@@ -37,6 +37,7 @@ Usage:
   sherpa pre      PreToolUse hook (blocks dangerous commands)
   sherpa post     PostToolUse hook (offloads large output)
   sherpa daemon   Start persistent daemon for faster hook responses
+  sherpa status   Show LLM provider status and rate limits
 
 Options:
   --help, -h      Show this help message
@@ -46,6 +47,7 @@ Examples:
   sherpa init              # First-time setup
   sherpa init --force      # Overwrite existing config
   sherpa daemon &          # Start daemon in background
+  sherpa status            # Check provider quotas
 `)
 }
 
@@ -65,6 +67,10 @@ try {
 		case 'daemon':
 			// Dynamic import to avoid loading daemon code unless needed
 			import('./daemon.js')
+			break
+		case 'status':
+			// Dynamic import for status command
+			import('./commands/status.js').then(m => m.runStatus())
 			break
 		case '--help':
 		case '-h':

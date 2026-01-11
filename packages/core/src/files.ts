@@ -94,7 +94,7 @@ export function readFilesWithLimit(
 
 	for (const path of paths) {
 		try {
-			const stat = statSync(path)
+			statSync(path) // Verify file exists and is readable
 			const formatted = formatWithLineNumbers(path)
 
 			if (totalSize + formatted.length > maxBytes) {
