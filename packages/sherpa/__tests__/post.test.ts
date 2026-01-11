@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+
 import { offloadOutput } from '../src/commands/post.js'
 import type { GuardConfig } from '../src/types.js'
 
@@ -37,7 +38,7 @@ describe('offloadOutput', () => {
 	})
 
 	test('includes preview of last lines', () => {
-		const lines = Array(500).fill(0).map((_, i) => `Line ${i}`)
+		const lines = Array(500).fill(0).map((_, i) => `Line ${ i }`)
 		const largeOutput = lines.join('\n')
 		const result = offloadOutput(largeOutput, 0, testConfig)
 		expect(result.modified).toBe(true)

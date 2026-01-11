@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { normalizePath, extractCommands, parseCommand } from '../src/parser.js'
+
+import { extractCommands, normalizePath, parseCommand } from '../src/parser.js'
 import type { ASTNode } from '../src/types.js'
 
 describe('normalizePath', () => {
@@ -50,7 +51,7 @@ describe('parseCommand', () => {
 		const node: ASTNode = {
 			type: 'Command',
 			name: { text: 'ls' },
-			suffix: [{ text: '-la' }]
+			suffix: [ { text: '-la' } ]
 		}
 		const result = parseCommand(node)
 		expect(result?.cmd).toBe('ls')
@@ -62,7 +63,7 @@ describe('parseCommand', () => {
 		const node: ASTNode = {
 			type: 'Command',
 			name: { text: 'rm' },
-			suffix: [{ text: '--recursive' }, { text: '--force' }, { text: '/tmp/foo' }]
+			suffix: [ { text: '--recursive' }, { text: '--force' }, { text: '/tmp/foo' } ]
 		}
 		const result = parseCommand(node)
 		expect(result?.cmd).toBe('rm')
@@ -75,13 +76,13 @@ describe('parseCommand', () => {
 		const node: ASTNode = {
 			type: 'Command',
 			name: { text: 'git' },
-			suffix: [{ text: 'push' }, { text: '--force' }, { text: 'origin' }, { text: 'main' }]
+			suffix: [ { text: 'push' }, { text: '--force' }, { text: 'origin' }, { text: 'main' } ]
 		}
 		const result = parseCommand(node)
 		expect(result?.cmd).toBe('git')
 		expect(result?.subcommand).toBe('push')
 		expect(result?.flags).toContain('force')
-		expect(result?.subArgs).toEqual(['origin', 'main'])
+		expect(result?.subArgs).toEqual([ 'origin', 'main' ])
 	})
 
 	test('handles command with no name', () => {
@@ -94,7 +95,7 @@ describe('parseCommand', () => {
 		const node: ASTNode = {
 			type: 'Command',
 			name: { text: 'head' },
-			suffix: [{ text: '-10' }, { text: 'file.txt' }]
+			suffix: [ { text: '-10' }, { text: 'file.txt' } ]
 		}
 		const result = parseCommand(node)
 		expect(result?.flags).not.toContain('1')
@@ -112,7 +113,7 @@ describe('extractCommands', () => {
 		const script: ASTNode = {
 			type: 'Script',
 			commands: [
-				{ type: 'Command', name: { text: 'echo' }, suffix: [{ text: 'hello' }] },
+				{ type: 'Command', name: { text: 'echo' }, suffix: [ { text: 'hello' } ] },
 				{ type: 'Command', name: { text: 'ls' }, suffix: [] }
 			]
 		}
@@ -126,7 +127,7 @@ describe('extractCommands', () => {
 		const expr: ASTNode = {
 			type: 'LogicalExpression',
 			left: { type: 'Command', name: { text: 'true' }, suffix: [] },
-			right: { type: 'Command', name: { text: 'echo' }, suffix: [{ text: 'yes' }] }
+			right: { type: 'Command', name: { text: 'echo' }, suffix: [ { text: 'yes' } ] }
 		}
 		const result = extractCommands(expr)
 		expect(result).toHaveLength(2)
@@ -136,8 +137,8 @@ describe('extractCommands', () => {
 		const pipeline: ASTNode = {
 			type: 'Pipeline',
 			commands: [
-				{ type: 'Command', name: { text: 'cat' }, suffix: [{ text: 'file' }] },
-				{ type: 'Command', name: { text: 'grep' }, suffix: [{ text: 'pattern' }] }
+				{ type: 'Command', name: { text: 'cat' }, suffix: [ { text: 'file' } ] },
+				{ type: 'Command', name: { text: 'grep' }, suffix: [ { text: 'pattern' } ] }
 			]
 		}
 		const result = extractCommands(pipeline)

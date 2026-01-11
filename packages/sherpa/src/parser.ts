@@ -36,6 +36,8 @@ export function normalizePath(inputPath: string): PathInfo {
 	// Handle home directory
 	let normalized = inputPath.replace(/^~/, homedir())
 
+	const isAbsolute = original.startsWith('/') || original.startsWith('~')
+
 	// Split into segments and resolve
 	const segments = normalized.split('/')
 	const resolved: string[] = []
@@ -48,13 +50,14 @@ export function normalizePath(inputPath: string): PathInfo {
 		}
 	}
 
-	normalized = `/${  resolved.join('/') }`
+	// Only prefix with / for absolute paths
+	normalized = isAbsolute ? `/${ resolved.join('/') }` : resolved.join('/')
 
 	return {
 		original,
 		normalized,
 		hasTraversal: original.includes('..'),
-		isAbsolute: original.startsWith('/') || original.startsWith('~')
+		isAbsolute
 	}
 }
 
@@ -143,7 +146,7 @@ export function parseCommand(node: ASTNode): CommandInfo | null {
 		} else if (
 			text.startsWith('-') &&
 			text.length > 1 &&
-			!/^-[\d.]+$/.test(text)
+			!/^-\d+\.?\d*$/.test(text)
 		) {
 			// Short flags: -rf, -f, -r (but not negative numbers like -1)
 			const flags = text.slice(1)

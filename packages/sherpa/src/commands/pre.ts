@@ -22,10 +22,47 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const rulesPath = join(__dirname, '..', '..', 'rules.json')
 const rules: RulesConfig = JSON.parse(readFileSync(rulesPath, 'utf-8'))
 
+// Fast-path: commands that are always safe (skip expensive parse)
+const SAFE_COMMAND_PREFIXES = [
+	'echo ', 'echo\t', 'printf ',
+	'ls ', 'ls\t', 'ls\n', 'ls',
+	'pwd', 'date', 'whoami', 'id',
+	'cat ', 'head ', 'tail ', 'wc ',
+	'grep ', 'awk ', 'sed ',
+	'cd ', 'cd\t',
+	'true', 'false', ':'
+]
+
+function isFastPathSafe(command: string): boolean {
+	const trimmed = command.trim()
+	// Check if command starts with a known-safe prefix
+	for (const prefix of SAFE_COMMAND_PREFIXES) {
+		if (trimmed === prefix.trim() || trimmed.startsWith(prefix)) {
+			// Quick check: no compound commands, pipes, or dangerous chars
+			if (
+				!trimmed.includes('|') &&
+				!trimmed.includes('&&') &&
+				!trimmed.includes('||') &&
+				!trimmed.includes(';') &&
+				!trimmed.includes('$(') &&
+				!trimmed.includes('`')
+			) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 /**
  * Run pre-guard check on a command
  */
 export function checkBashCommand(command: string): { blocked: boolean; rule?: { name: string; reason: string } } {
+	// Fast path: skip parsing for known-safe commands
+	if (isFastPathSafe(command)) {
+		return { blocked: false }
+	}
+
 	// Parse command into AST
 	let ast: ASTNode
 	try {

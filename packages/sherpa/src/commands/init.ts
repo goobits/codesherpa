@@ -51,7 +51,11 @@ gitleaks protect --staged --verbose
 `
 
 export function runInit(): void {
-	const force = process.argv.includes('--force')
+	// Parse --force flag only from args after 'init' command
+	// Use argv[2] for exact command match (argv[0]=node, argv[1]=sherpa, argv[2]=command)
+	const isInitCommand = process.argv[2] === 'init'
+	const initArgs = isInitCommand ? process.argv.slice(3) : []
+	const force = initArgs.includes('--force')
 	const cwd = process.cwd()
 
 	console.log('Setting up sherpa...\n')

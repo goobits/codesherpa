@@ -36,6 +36,7 @@ Usage:
   sherpa init     Set up repo (husky, lint-staged, gitleaks, claude hooks)
   sherpa pre      PreToolUse hook (blocks dangerous commands)
   sherpa post     PostToolUse hook (offloads large output)
+  sherpa daemon   Start persistent daemon for faster hook responses
 
 Options:
   --help, -h      Show this help message
@@ -44,6 +45,7 @@ Options:
 Examples:
   sherpa init              # First-time setup
   sherpa init --force      # Overwrite existing config
+  sherpa daemon &          # Start daemon in background
 `)
 }
 
@@ -59,6 +61,10 @@ try {
 			break
 		case 'post':
 			runPost()
+			break
+		case 'daemon':
+			// Dynamic import to avoid loading daemon code unless needed
+			import('./daemon.js')
 			break
 		case '--help':
 		case '-h':

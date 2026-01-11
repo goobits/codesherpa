@@ -1,20 +1,21 @@
 import { describe, expect, test } from 'vitest'
-import { matchesBlockRule, matchesAllowRule, checkCommand, checkPipeline } from '../src/rules.js'
-import type { CommandInfo, Rule, RulesConfig, ASTNode } from '../src/types.js'
+
+import { checkCommand, checkPipeline,matchesAllowRule, matchesBlockRule } from '../src/rules.js'
+import type { ASTNode,CommandInfo, Rule, RulesConfig } from '../src/types.js'
 
 describe('matchesBlockRule', () => {
 	test('matches command by name', () => {
 		const cmdInfo: CommandInfo = {
 			cmd: 'rm',
 			args: [],
-			flags: ['r', 'f'],
-			paths: ['/'],
-			raw: ['-rf', '/']
+			flags: [ 'r', 'f' ],
+			paths: [ '/' ],
+			raw: [ '-rf', '/' ]
 		}
 		const rule: Rule = {
 			name: 'rm-rf',
 			cmd: 'rm',
-			flags: ['r', 'f'],
+			flags: [ 'r', 'f' ],
 			reason: 'dangerous'
 		}
 		expect(matchesBlockRule(cmdInfo, rule)).toBe(true)
@@ -40,14 +41,14 @@ describe('matchesBlockRule', () => {
 		const cmdInfo: CommandInfo = {
 			cmd: 'rm',
 			args: [],
-			flags: ['f'],
+			flags: [ 'f' ],
 			paths: [],
-			raw: ['-f']
+			raw: [ '-f' ]
 		}
 		const rule: Rule = {
 			name: 'rm-force',
 			cmd: 'rm',
-			flags: ['f', 'r'],
+			flags: [ 'f', 'r' ],
 			flagMode: 'any',
 			reason: 'has force or recursive'
 		}
@@ -58,14 +59,14 @@ describe('matchesBlockRule', () => {
 		const cmdInfo: CommandInfo = {
 			cmd: 'rm',
 			args: [],
-			flags: ['f'],
+			flags: [ 'f' ],
 			paths: [],
-			raw: ['-f']
+			raw: [ '-f' ]
 		}
 		const rule: Rule = {
 			name: 'rm-rf',
 			cmd: 'rm',
-			flags: ['f', 'r'],
+			flags: [ 'f', 'r' ],
 			flagMode: 'all',
 			reason: 'needs both'
 		}
@@ -75,10 +76,10 @@ describe('matchesBlockRule', () => {
 	test('matches subcommand', () => {
 		const cmdInfo: CommandInfo = {
 			cmd: 'git',
-			args: ['push'],
-			flags: ['force'],
+			args: [ 'push' ],
+			flags: [ 'force' ],
 			paths: [],
-			raw: ['push', '--force'],
+			raw: [ 'push', '--force' ],
 			subcommand: 'push'
 		}
 		const rule: Rule = {
@@ -94,10 +95,10 @@ describe('matchesBlockRule', () => {
 	test('matches path patterns', () => {
 		const cmdInfo: CommandInfo = {
 			cmd: 'cat',
-			args: ['.env'],
+			args: [ '.env' ],
 			flags: [],
-			paths: ['.env'],
-			raw: ['.env']
+			paths: [ '.env' ],
+			raw: [ '.env' ]
 		}
 		const rule: Rule = {
 			name: 'read-env',
@@ -113,10 +114,10 @@ describe('matchesAllowRule', () => {
 	test('matches allow rule for safe command', () => {
 		const cmdInfo: CommandInfo = {
 			cmd: 'ls',
-			args: ['/home'],
-			flags: ['l'],
-			paths: ['/home'],
-			raw: ['-l', '/home']
+			args: [ '/home' ],
+			flags: [ 'l' ],
+			paths: [ '/home' ],
+			raw: [ '-l', '/home' ]
 		}
 		const rule: Rule = {
 			name: 'ls-anywhere',
@@ -133,7 +134,7 @@ describe('checkCommand', () => {
 			{
 				name: 'rm-rf',
 				cmd: 'rm',
-				flags: ['r', 'f'],
+				flags: [ 'r', 'f' ],
 				reason: 'recursive force delete is dangerous'
 			},
 			{
@@ -156,10 +157,10 @@ describe('checkCommand', () => {
 	test('blocks rm -rf', () => {
 		const cmdInfo: CommandInfo = {
 			cmd: 'rm',
-			args: ['/'],
-			flags: ['r', 'f'],
-			paths: ['/'],
-			raw: ['-rf', '/']
+			args: [ '/' ],
+			flags: [ 'r', 'f' ],
+			paths: [ '/' ],
+			raw: [ '-rf', '/' ]
 		}
 		const result = checkCommand(cmdInfo, rules)
 		expect(result.blocked).toBe(true)
@@ -169,10 +170,10 @@ describe('checkCommand', () => {
 	test('allows rm in /tmp', () => {
 		const cmdInfo: CommandInfo = {
 			cmd: 'rm',
-			args: ['/tmp/foo'],
-			flags: ['r', 'f'],
-			paths: ['/tmp/foo'],
-			raw: ['-rf', '/tmp/foo']
+			args: [ '/tmp/foo' ],
+			flags: [ 'r', 'f' ],
+			paths: [ '/tmp/foo' ],
+			raw: [ '-rf', '/tmp/foo' ]
 		}
 		const result = checkCommand(cmdInfo, rules)
 		expect(result.blocked).toBe(false)
@@ -181,10 +182,10 @@ describe('checkCommand', () => {
 	test('allows safe commands', () => {
 		const cmdInfo: CommandInfo = {
 			cmd: 'echo',
-			args: ['hello'],
+			args: [ 'hello' ],
 			flags: [],
 			paths: [],
-			raw: ['hello']
+			raw: [ 'hello' ]
 		}
 		const result = checkCommand(cmdInfo, rules)
 		expect(result.blocked).toBe(false)
@@ -196,8 +197,8 @@ describe('checkPipeline', () => {
 		block: [
 			{
 				name: 'curl-bash',
-				cmd: ['curl', 'wget'],
-				pipeTo: ['bash', 'sh', 'zsh'],
+				cmd: [ 'curl', 'wget' ],
+				pipeTo: [ 'bash', 'sh', 'zsh' ],
 				reason: 'remote code execution'
 			}
 		],

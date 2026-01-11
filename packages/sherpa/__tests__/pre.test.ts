@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+
 import { checkBashCommand } from '../src/commands/pre.js'
 
 describe('checkBashCommand - dangerous commands', () => {

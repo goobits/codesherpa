@@ -2,34 +2,35 @@
  * cerebras_ask tool - General purpose AI question
  */
 
-import { chat } from '@goobits/sherpa-core'
+import { chat, type Provider } from '@goobits/sherpa-core'
 
 import { ASK_SYSTEM } from '../prompts.js'
 
 export interface AskArgs {
 	prompt: string;
-	system?: string;
+	system?: string | null;
+	provider?: Provider | null;
 }
 
 export async function ask(args: AskArgs): Promise<string> {
 	return chat(args.prompt, {
-		system: args.system || ASK_SYSTEM
+		system: args.system || ASK_SYSTEM,
+		provider: args.provider || undefined
 	})
 }
 
 export const askTool = {
 	name: 'cerebras_ask',
-	description: 'Ask Cerebras LLM a question',
+	description: 'Ask Cerebras GLM-4.7 a question.',
 	inputSchema: {
 		type: 'object' as const,
 		properties: {
 			prompt: {
-				type: 'string',
-				description: 'The question to ask'
+				type: 'string'
 			},
 			system: {
 				type: 'string',
-				description: 'Optional custom system prompt'
+				default: null
 			}
 		},
 		required: [ 'prompt' ]

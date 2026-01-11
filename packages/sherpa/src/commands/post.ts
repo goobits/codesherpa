@@ -135,12 +135,14 @@ export function offloadOutput(
 	writeFileSync(filepath, output)
 
 	// Create preview (last N tokens worth of lines)
+	// Estimate ~4 chars per token to avoid expensive per-line token counting
+	const charsPerToken = 4
+	const targetChars = config.previewTokens * charsPerToken
 	const previewLines: string[] = []
-	let previewTokens = 0
-	for (let i = lines.length - 1; i >= 0 && previewTokens < config.previewTokens; i--) {
-		const lineTokens = countTokens(lines[i])
+	let charCount = 0
+	for (let i = lines.length - 1; i >= 0 && charCount < targetChars; i--) {
 		previewLines.unshift(lines[i])
-		previewTokens += lineTokens
+		charCount += lines[i].length + 1 // +1 for newline
 	}
 	const preview = previewLines.join('\n')
 

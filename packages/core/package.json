@@ -1,6 +1,7 @@
 {
   "name": "@goobits/sherpa-core",
   "version": "1.0.0",
+  "description": "Core utilities for sherpa CLI - token counting, file operations, git helpers, and LLM integration",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,10 +11,28 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "claude",
+    "mcp",
+    "ai",
+    "coding",
+    "safety",
+    "hooks"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/goobits/sherpa.git",
+    "directory": "packages/core"
   },
   "dependencies": {
     "ignore": "^5.3.0",

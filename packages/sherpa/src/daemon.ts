@@ -7,7 +7,6 @@
  */
 
 import { loadConfig } from '@goobits/sherpa-core'
-import { countTokens } from '@goobits/sherpa-core'
 import { existsSync, readFileSync,unlinkSync } from 'fs'
 import { createServer, type Socket } from 'net'
 import { dirname, join } from 'path'
@@ -45,6 +44,13 @@ function handleConnection(socket: Socket): void {
 	socket.on('data', chunk => {
 		buffer += chunk.toString()
 
+		// Limit buffer size to prevent DoS
+		if (buffer.length > 10 * 1024 * 1024) {
+			socket.write(JSON.stringify({ error: 'Request too large' }))
+			socket.end()
+			return
+		}
+
 		// Try to parse complete JSON
 		try {
 			const request: DaemonRequest = JSON.parse(buffer)
@@ -71,8 +77,15 @@ function handleConnection(socket: Socket): void {
 
 			socket.write(JSON.stringify(response))
 			socket.end()
-		} catch {
-			// Incomplete JSON, wait for more data
+		} catch (err) {
+			// Check if it's a syntax error (invalid JSON) vs incomplete JSON
+			if (err instanceof SyntaxError && !err.message.includes('end of JSON')) {
+				// Invalid JSON structure - reset buffer and report error
+				buffer = ''
+				socket.write(JSON.stringify({ error: 'Invalid JSON' }))
+				socket.end()
+			}
+			// Otherwise incomplete JSON, wait for more data
 		}
 	})
 
