@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "cerebras-reviewer": {
+      "type": "stdio",
+      "command": "/home/developer/.nvm/versions/node/v22.21.1/bin/node",
+      "args": ["/workspace/mcp-sherpa/packages/reviewer/dist/index.js"],
+      "env": {}
+    }
+  }
+}

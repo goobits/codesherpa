@@ -18,6 +18,7 @@ sherpa init
 ```
 
 That's it! After restart, you'll have:
+
 - **Hooks**: Block dangerous commands, manage large outputs
 - **MCP**: AI-powered code review via Cerebras
 
@@ -25,13 +26,13 @@ That's it! After restart, you'll have:
 
 ### Project Files Created
 
-| File | Purpose |
-|------|---------|
-| `.claude/settings.local.json` | Claude Code hooks |
-| `.claude/guard.json` | Guard configuration |
-| `.mcp.json` | MCP server (cerebras-reviewer) |
-| `.husky/pre-commit` | Git pre-commit hooks |
-| `.lintstagedrc.json` | Lint staged files |
+| File                          | Purpose                        |
+| ----------------------------- | ------------------------------ |
+| `.claude/settings.local.json` | Claude Code hooks              |
+| `.claude/guard.json`          | Guard configuration            |
+| `.mcp.json`                   | MCP server (cerebras-reviewer) |
+| `.husky/pre-commit`           | Git pre-commit hooks           |
+| `.lintstagedrc.json`          | Lint staged files              |
 
 ### Claude Code Hooks
 
@@ -40,8 +41,12 @@ Configured in `.claude/settings.local.json`:
 ```json
 {
   "hooks": {
-    "PreToolUse": [{ "matcher": "Bash", "hooks": [{"type": "command", "command": "sherpa pre"}] }],
-    "PostToolUse": [{ "matcher": "Bash", "hooks": [{"type": "command", "command": "sherpa post"}] }]
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "sherpa pre" }] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "sherpa post" }] }
+    ]
   }
 }
 ```
@@ -66,17 +71,26 @@ Configured in `.mcp.json`:
 ```
 
 Tools available:
-- `cerebras_review` - Review code with line-number citations
-- `cerebras_review_diff` - Review git changes
-- `cerebras_analyze` - Ask architectural questions
-- `cerebras_ask` - General questions to Cerebras LLM
+
+- `review` - Review code, diffs, or prompts with line-number citations
+
+Examples:
+
+```
+/review **/*.js
+/review **/*.js --dry
+/review --diff
+/review --diff --base main --path packages/reviewer
+/review --ask "How does the auth flow work?"
+/review --ask "Summarize this repo" --dry
+```
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| `@goobits/sherpa` | CLI and hooks for Claude Code |
-| `@goobits/sherpa-core` | Shared utilities |
+| Package                    | Description                   |
+| -------------------------- | ----------------------------- |
+| `@goobits/sherpa`          | CLI and hooks for Claude Code |
+| `@goobits/sherpa-core`     | Shared utilities              |
 | `@goobits/sherpa-reviewer` | MCP server for AI code review |
 
 ## CLI Commands

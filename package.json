@@ -6,9 +6,13 @@
     "build": "pnpm -r build",
     "dev": "pnpm -r --parallel dev",
     "typecheck": "pnpm -r typecheck",
-    "link": "cd packages/sherpa && pnpm link --global && cd ../reviewer && pnpm link --global"
+    "link": "cd packages/sherpa && pnpm link --global && cd ../reviewer && pnpm link --global",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.0",
+    "prettier": "^3.3.3",
     "typescript": "^5.7.0",
     "tsx": "^4.19.0",
     "@types/node": "^22.0.0"

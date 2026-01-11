@@ -4,6 +4,41 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ORIGINAL_PWD="$(pwd)"
+
+INIT_AFTER_INSTALL="false"
+INIT_DIR=""
+
+print_usage() {
+	echo "Usage: ./install.sh [--init [path]] [--help]"
+	echo ""
+	echo "Options:"
+	echo "  --init [path]   Run 'sherpa init' after install (default: current directory)"
+	echo "  --help          Show this help message"
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --init)
+            INIT_AFTER_INSTALL="true"
+            shift
+            if [ -n "${1:-}" ] && [ "${1#--}" = "$1" ]; then
+                INIT_DIR="$1"
+                shift
+            fi
+            ;;
+        --help|-h)
+            print_usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo ""
+            print_usage
+            exit 1
+            ;;
+    esac
+done
 
 echo "Installing mcp-sherpa..."
 
@@ -68,5 +103,33 @@ echo ""
 echo "Installed:"
 echo "  sherpa   -> $BIN_DIR/sherpa"
 echo "  reviewer -> $BIN_DIR/reviewer"
+
 echo ""
-echo "Run 'sherpa init' in your project to set up Claude Code hooks."
+echo "Stable (npm):"
+echo "  npx @goobits/sherpa init"
+echo ""
+echo "Bleeding edge (this repo):"
+echo "  ./install.sh --init"
+
+if [ "$INIT_AFTER_INSTALL" = "true" ]; then
+	TARGET_DIR="$ORIGINAL_PWD"
+	if [ -n "$INIT_DIR" ]; then
+		TARGET_DIR="$INIT_DIR"
+    fi
+
+    if [ ! -d "$TARGET_DIR" ]; then
+        echo ""
+        echo "Error: init path does not exist: $TARGET_DIR"
+        exit 1
+    fi
+
+    echo ""
+    echo "Running 'sherpa init' in: $TARGET_DIR"
+    if ! (cd "$TARGET_DIR" && "$BIN_DIR/sherpa" init); then
+        echo ""
+        echo "Warning: 'sherpa init' failed. Re-run manually in your project."
+    fi
+else
+    echo ""
+    echo "Run 'sherpa init' in your project to set up Claude Code hooks."
+fi
