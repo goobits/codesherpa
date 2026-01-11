@@ -1,10 +1,11 @@
 {
   "$schema": "./config-schema.json",
-  "$comment": "Guard configuration. Override via environment variables with GUARD_ prefix.",
+  "$comment": "Guard configuration. Copy to .claude/guard.json in your project to customize.",
 
   "maxTokens": 2000,
   "previewTokens": 500,
   "scratchDir": ".claude/scratch",
   "maxAgeMinutes": 60,
+  "maxScratchSizeMB": 50,
   "socketPath": "/tmp/mcp-guard.sock"
 }

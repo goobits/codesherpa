@@ -4,7 +4,8 @@
   "type": "module",
   "bin": {
     "guard-pre": "dist/shim.js",
-    "guard-post": "dist/shim.js"
+    "guard-post": "dist/shim.js",
+    "guard-init": "dist/init.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

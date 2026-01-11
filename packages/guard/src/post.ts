@@ -2,7 +2,7 @@
  * PostToolUse hook - offloads large outputs to scratch files
  */
 
-import { mkdirSync, writeFileSync, readdirSync, unlinkSync, statSync } from 'fs';
+import { mkdirSync, writeFileSync, readdirSync, unlinkSync, statSync, existsSync } from 'fs';
 import { join } from 'path';
 import { createHash } from 'crypto';
 
@@ -17,13 +17,37 @@ import { countTokens } from '@mcp/core';
 import { DEFAULT_CONFIG, type GuardConfig } from './types.js';
 
 /**
- * Clean up old scratch files
+ * Load guard config from .claude/guard.json or fallback locations
  */
-function cleanupScratch(scratchDir: string, maxAgeMinutes: number): void {
+export function loadGuardConfig(): GuardConfig {
+	const searchPaths = [
+		join(process.cwd(), '.claude', 'guard.json'),
+		join(process.cwd(), 'guard.json'),
+	];
+	return loadConfig<GuardConfig>('guard.json', DEFAULT_CONFIG, searchPaths);
+}
+
+interface FileInfo {
+	path: string;
+	size: number;
+	mtime: number;
+}
+
+/**
+ * Clean up scratch files by age and size
+ */
+function cleanupScratch(scratchDir: string, maxAgeMinutes: number, maxSizeMB: number): void {
 	try {
+		if (!existsSync(scratchDir)) return;
+
 		const files = readdirSync(scratchDir);
 		const now = Date.now();
 		const maxAge = maxAgeMinutes * 60 * 1000;
+		const maxBytes = maxSizeMB * 1024 * 1024;
+
+		// Collect file info
+		const fileInfos: FileInfo[] = [];
+		let totalSize = 0;
 
 		for (const file of files) {
 			if (!file.startsWith('out_')) continue;
@@ -31,11 +55,43 @@ function cleanupScratch(scratchDir: string, maxAgeMinutes: number): void {
 			const filepath = join(scratchDir, file);
 			try {
 				const stat = statSync(filepath);
-				if (now - stat.mtimeMs > maxAge) {
-					unlinkSync(filepath);
-				}
+				fileInfos.push({
+					path: filepath,
+					size: stat.size,
+					mtime: stat.mtimeMs,
+				});
+				totalSize += stat.size;
 			} catch {
 				// Ignore errors on individual files
+			}
+		}
+
+		// Delete files older than maxAge
+		for (const info of fileInfos) {
+			if (now - info.mtime > maxAge) {
+				try {
+					unlinkSync(info.path);
+					totalSize -= info.size;
+				} catch {
+					// Ignore
+				}
+			}
+		}
+
+		// If still over size limit, delete oldest files (LRU)
+		if (totalSize > maxBytes) {
+			const remaining = fileInfos
+				.filter((f) => existsSync(f.path))
+				.sort((a, b) => a.mtime - b.mtime); // Oldest first
+
+			for (const info of remaining) {
+				if (totalSize <= maxBytes) break;
+				try {
+					unlinkSync(info.path);
+					totalSize -= info.size;
+				} catch {
+					// Ignore
+				}
 			}
 		}
 	} catch {
@@ -70,8 +126,8 @@ export function offloadOutput(
 	const scratchDir = join(process.cwd(), config.scratchDir);
 	mkdirSync(scratchDir, { recursive: true });
 
-	// Clean up old files
-	cleanupScratch(scratchDir, config.maxAgeMinutes);
+	// Clean up old files and enforce size limit
+	cleanupScratch(scratchDir, config.maxAgeMinutes, config.maxScratchSizeMB);
 
 	// Save to scratch file
 	const hash = hashOutput(output);
@@ -119,8 +175,8 @@ export function runPostGuard(): void {
 		const stderr = data.tool_result?.stderr || '';
 		const exitCode = data.tool_result?.exit_code || 0;
 
-		// Load config
-		const config = loadConfig<GuardConfig>('config.json', DEFAULT_CONFIG);
+		// Load config from .claude/guard.json or defaults
+		const config = loadGuardConfig();
 
 		// Check stdout
 		const stdoutResult = offloadOutput(stdout, exitCode, config);

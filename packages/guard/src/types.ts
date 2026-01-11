@@ -64,6 +64,7 @@ export interface GuardConfig {
 	previewTokens: number;
 	scratchDir: string;
 	maxAgeMinutes: number;
+	maxScratchSizeMB: number;
 	socketPath: string;
 }
 
@@ -73,5 +74,6 @@ export const DEFAULT_CONFIG: GuardConfig = {
 	previewTokens: 500,
 	scratchDir: '.claude/scratch',
 	maxAgeMinutes: 60,
+	maxScratchSizeMB: 50,
 	socketPath: '/tmp/mcp-guard.sock',
 };
