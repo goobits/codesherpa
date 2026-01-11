@@ -138,7 +138,7 @@ export function runInit(): void {
   console.log('Claude Code:')
   console.log('  - sherpa pre: Block dangerous bash commands')
   console.log('  - sherpa post: Offload large outputs')
-  console.log('  - cerebras-reviewer: AI code review (MCP)')
+  console.log('  - reviewer: AI code review (MCP)')
   console.log('')
   console.log('IMPORTANT: Restart Claude Code to load the MCP server.')
   console.log('='.repeat(50))
@@ -244,11 +244,11 @@ function setupMcpConfig(cwd: string, force: boolean): void {
   // 2. Try using claude CLI first (most reliable)
   try {
     // Remove existing and add fresh (always, to ensure correct config)
-    execSync('claude mcp remove cerebras-reviewer -s project 2>/dev/null || true', {
+    execSync('claude mcp remove reviewer -s project 2>/dev/null || true', {
       cwd,
       stdio: 'pipe'
     })
-    execSync(`claude mcp add cerebras-reviewer -s project ${nodePath} ${reviewerPath}`, {
+    execSync(`claude mcp add reviewer -s project ${nodePath} ${reviewerPath}`, {
       cwd,
       stdio: 'pipe'
     })
@@ -258,7 +258,7 @@ function setupMcpConfig(cwd: string, force: boolean): void {
     // Claude CLI not available, fall back to manual config
   }
 
-  // 3. Manual .mcp.json creation (always overwrite cerebras-reviewer to fix any issues)
+  // 3. Manual .mcp.json creation (always overwrite reviewer to fix any issues)
   let mcpJson: McpJson = { mcpServers: {} }
   if (existsSync(mcpPath)) {
     try {
@@ -268,9 +268,9 @@ function setupMcpConfig(cwd: string, force: boolean): void {
     }
   }
 
-  mcpJson.mcpServers['cerebras-reviewer'] = mcpConfig
+  mcpJson.mcpServers['reviewer'] = mcpConfig
   writeFileSync(mcpPath, `${JSON.stringify(mcpJson, null, 2)}\n`)
-  console.log('Configured .mcp.json with cerebras-reviewer')
+  console.log('Configured .mcp.json with reviewer')
 
   // 4. Verify it works
   try {

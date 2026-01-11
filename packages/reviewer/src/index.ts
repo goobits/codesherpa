@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * cerebras-reviewer MCP server
+ * reviewer MCP server
  *
  * Provides code review tools powered by Cerebras LLM
  */
@@ -14,7 +14,7 @@ import { review, type ReviewArgs, reviewTool } from './tools/review.js'
 // Create MCP server
 const server = new Server(
   {
-    name: 'cerebras-reviewer',
+    name: 'reviewer',
     version: '1.0.0'
   },
   {

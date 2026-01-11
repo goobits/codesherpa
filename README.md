@@ -26,13 +26,13 @@ That's it! After restart, you'll have:
 
 ### Project Files Created
 
-| File                          | Purpose                        |
-| ----------------------------- | ------------------------------ |
-| `.claude/settings.local.json` | Claude Code hooks              |
-| `.claude/guard.json`          | Guard configuration            |
-| `.mcp.json`                   | MCP server (cerebras-reviewer) |
-| `.husky/pre-commit`           | Git pre-commit hooks           |
-| `.lintstagedrc.json`          | Lint staged files              |
+| File                          | Purpose               |
+| ----------------------------- | --------------------- |
+| `.claude/settings.local.json` | Claude Code hooks     |
+| `.claude/guard.json`          | Guard configuration   |
+| `.mcp.json`                   | MCP server (reviewer) |
+| `.husky/pre-commit`           | Git pre-commit hooks  |
+| `.lintstagedrc.json`          | Lint staged files     |
 
 ### Claude Code Hooks
 
@@ -61,7 +61,7 @@ Configured in `.mcp.json`:
 ```json
 {
   "mcpServers": {
-    "cerebras-reviewer": {
+    "reviewer": {
       "type": "stdio",
       "command": "/path/to/node",
       "args": ["/path/to/reviewer/dist/index.js"]
