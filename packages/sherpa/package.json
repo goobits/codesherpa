@@ -37,7 +37,7 @@
     "directory": "packages/sherpa"
   },
   "dependencies": {
-    "@goobits/sherpa-core": "^1.0.0",
+    "@goobits/sherpa-core": "workspace:*",
     "bash-parser": "^0.5.0"
   },
   "devDependencies": {

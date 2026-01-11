@@ -5,60 +5,92 @@ MCP servers and Claude Code hooks for safer, smarter AI coding.
 ## Quick Start
 
 ```bash
-npm install -g @goobits/sherpa
+# 1. Clone and install
+git clone https://github.com/goobits/mcp-sherpa.git
+cd mcp-sherpa
+./install.sh
+
+# 2. Set up your project
+cd ~/your-project
 sherpa init
+
+# 3. Restart Claude Code
 ```
 
-This sets up:
-- Claude Code hooks (block dangerous commands, manage output size)
-- Git pre-commit hooks (lint-staged + gitleaks secrets scanning)
+That's it! After restart, you'll have:
+- **Hooks**: Block dangerous commands, manage large outputs
+- **MCP**: AI-powered code review via Cerebras
+
+## What Gets Configured
+
+### Project Files Created
+
+| File | Purpose |
+|------|---------|
+| `.claude/settings.local.json` | Claude Code hooks |
+| `.claude/guard.json` | Guard configuration |
+| `.mcp.json` | MCP server (cerebras-reviewer) |
+| `.husky/pre-commit` | Git pre-commit hooks |
+| `.lintstagedrc.json` | Lint staged files |
+
+### Claude Code Hooks
+
+Configured in `.claude/settings.local.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [{ "matcher": "Bash", "hooks": [{"type": "command", "command": "sherpa pre"}] }],
+    "PostToolUse": [{ "matcher": "Bash", "hooks": [{"type": "command", "command": "sherpa post"}] }]
+  }
+}
+```
+
+- **sherpa pre**: Blocks dangerous bash commands (rm -rf, curl|bash, etc.)
+- **sherpa post**: Offloads large outputs to `.claude/scratch/`
+
+### MCP Server
+
+Configured in `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "cerebras-reviewer": {
+      "type": "stdio",
+      "command": "/path/to/node",
+      "args": ["/path/to/reviewer/dist/index.js"]
+    }
+  }
+}
+```
+
+Tools available:
+- `cerebras_review` - Review code with line-number citations
+- `cerebras_review_diff` - Review git changes
+- `cerebras_analyze` - Ask architectural questions
+- `cerebras_ask` - General questions to Cerebras LLM
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
 | `@goobits/sherpa` | CLI and hooks for Claude Code |
-| `@goobits/sherpa-core` | Shared utilities (files, git, llm, tokens) |
+| `@goobits/sherpa-core` | Shared utilities |
 | `@goobits/sherpa-reviewer` | MCP server for AI code review |
 
-## @goobits/sherpa
-
-### CLI Commands
+## CLI Commands
 
 ```bash
-sherpa init     # Set up repo (husky, lint-staged, gitleaks, claude hooks)
-sherpa pre      # PreToolUse hook (blocks dangerous commands)
-sherpa post     # PostToolUse hook (offloads large output)
+sherpa init          # Set up repo (hooks, MCP, husky, lint-staged)
+sherpa init --force  # Overwrite existing config
+sherpa pre           # PreToolUse hook (blocks dangerous commands)
+sherpa post          # PostToolUse hook (offloads large output)
+sherpa daemon        # Start persistent daemon for faster responses
+sherpa status        # Show LLM provider status
 ```
 
-### What `sherpa init` Creates
-
-```
-.claude/
-├── settings.local.json    # Claude Code hook config
-└── guard.json             # Guard settings
-.husky/
-└── pre-commit             # lint-staged + gitleaks
-.lintstagedrc.json         # Lint staged files config
-```
-
-### Claude Hooks
-
-Configured automatically in `.claude/settings.local.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [{ "matcher": "Bash", "command": "sherpa pre" }],
-    "PostToolUse": [{ "matcher": "Bash", "command": "sherpa post" }]
-  }
-}
-```
-
-- **sherpa pre**: Blocks dangerous bash commands (rm -rf, curl|bash, etc.)
-- **sherpa post**: Offloads large outputs to `.claude/scratch/` to prevent context bloat
-
-### Guard Config
+## Guard Config
 
 Edit `.claude/guard.json`:
 
@@ -72,35 +104,27 @@ Edit `.claude/guard.json`:
 }
 ```
 
-### Pre-commit Hooks
-
-Runs on every git commit:
-1. **lint-staged** - Lint/format only changed files
-2. **gitleaks** - Scan for secrets (API keys, credentials)
-
-Requires [gitleaks](https://github.com/gitleaks/gitleaks) installed separately.
-
-## @goobits/sherpa-reviewer
-
-MCP server for AI-powered code review via Cerebras.
-
-```bash
-# Review files
-cerebras_review("src/", { focus: "security" })
-
-# Review git diff
-cerebras_review_diff("main")
-
-# Ask questions
-cerebras_ask("How does this function work?")
-```
-
 ## Development
 
 ```bash
 pnpm install
 pnpm build
 ```
+
+## Troubleshooting
+
+### MCP server not connecting
+
+1. Check `.mcp.json` has `"type": "stdio"`
+2. Ensure paths are absolute
+3. Restart Claude Code completely
+4. Run `claude mcp list` to verify
+
+### Hooks not working
+
+1. Check `.claude/settings.local.json` format
+2. Ensure `sherpa` is in PATH
+3. Run `/doctor` in Claude Code
 
 ## License
 
