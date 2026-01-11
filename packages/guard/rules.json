@@ -1,0 +1,178 @@
+{
+  "$schema": "./rules-schema.json",
+  "$comment": "AST-based bash command filter rules. Edit this file to customize blocking.",
+
+  "block": [
+    {
+      "name": "Recursive force delete",
+      "cmd": "rm",
+      "flags": ["r", "f"],
+      "reason": "rm with recursive and force flags is dangerous"
+    },
+    {
+      "name": "Delete system directories",
+      "cmd": "rm",
+      "pathPatterns": ["^/$", "^/\\*", "^~/?$", "^\\$HOME", "^/(etc|usr|bin|sbin|boot|lib|var)(/|$)"],
+      "reason": "Deleting system directories is catastrophic"
+    },
+    {
+      "name": "Git force push",
+      "cmd": "git",
+      "subcommand": "push",
+      "flags": ["f", "force"],
+      "flagMode": "any",
+      "reason": "Force push can destroy remote history"
+    },
+    {
+      "name": "Git hard reset",
+      "cmd": "git",
+      "subcommand": "reset",
+      "flags": ["hard"],
+      "reason": "Hard reset discards uncommitted changes"
+    },
+    {
+      "name": "Git force clean",
+      "cmd": "git",
+      "subcommand": "clean",
+      "flags": ["f", "force"],
+      "flagMode": "any",
+      "reason": "Git clean -f deletes untracked files permanently"
+    },
+    {
+      "name": "Git delete main/master",
+      "cmd": "git",
+      "subcommand": "push",
+      "argPatterns": ["--delete\\s+(main|master)", ":(main|master)"],
+      "reason": "Deleting main/master branch is dangerous"
+    },
+    {
+      "name": "Git force branch delete",
+      "cmd": "git",
+      "subcommand": "branch",
+      "flags": ["D"],
+      "reason": "Uppercase -D force deletes without merge check"
+    },
+    {
+      "name": "Git stash drop",
+      "cmd": "git",
+      "subcommand": "stash",
+      "argPatterns": ["drop", "clear"],
+      "flagMode": "any",
+      "reason": "Dropping stashes permanently loses uncommitted work"
+    },
+    {
+      "name": "Git reflog expire",
+      "cmd": "git",
+      "subcommand": "reflog",
+      "argPatterns": ["expire", "delete"],
+      "flagMode": "any",
+      "reason": "Expiring reflog removes ability to recover commits"
+    },
+    {
+      "name": "Git interactive rebase",
+      "cmd": "git",
+      "subcommand": "rebase",
+      "flags": ["i", "interactive"],
+      "flagMode": "any",
+      "reason": "Interactive rebase can rewrite shared history"
+    },
+    {
+      "name": "Git filter-branch",
+      "cmd": "git",
+      "subcommand": "filter-branch",
+      "reason": "filter-branch rewrites repository history"
+    },
+    {
+      "name": "Curl pipe to shell",
+      "cmd": "curl",
+      "pipeTo": ["bash", "sh", "zsh"],
+      "reason": "Piping curl to shell is a security risk"
+    },
+    {
+      "name": "Wget pipe to shell",
+      "cmd": "wget",
+      "pipeTo": ["bash", "sh", "zsh"],
+      "reason": "Piping wget to shell is a security risk"
+    },
+    {
+      "name": "Disk format commands",
+      "cmd": ["mkfs", "mkfs.ext4", "mkfs.xfs", "mkfs.btrfs"],
+      "reason": "Formatting disks is destructive"
+    },
+    {
+      "name": "DD to disk devices",
+      "cmd": "dd",
+      "argPatterns": ["of=/dev/(sd|nvme|vd|hd)"],
+      "reason": "Writing directly to disk devices is dangerous"
+    },
+    {
+      "name": "System shutdown/reboot",
+      "cmd": ["shutdown", "reboot", "halt", "poweroff", "init"],
+      "reason": "System control commands shouldn't be run by AI"
+    },
+    {
+      "name": "Chmod 777 recursive",
+      "cmd": "chmod",
+      "flags": ["R"],
+      "argPatterns": ["777"],
+      "reason": "Recursive chmod 777 is a security risk"
+    },
+    {
+      "name": "Dangerous chown",
+      "cmd": "chown",
+      "flags": ["R"],
+      "pathPatterns": ["^/"],
+      "reason": "Recursive chown on system paths is dangerous"
+    },
+    {
+      "name": "Truncate files",
+      "cmd": "truncate",
+      "reason": "truncate can zero out files causing data loss"
+    },
+    {
+      "name": "Shred files",
+      "cmd": "shred",
+      "reason": "shred securely deletes files permanently"
+    },
+    {
+      "name": "Find with delete",
+      "cmd": "find",
+      "argPatterns": ["-delete", "-exec\\s+rm"],
+      "flagMode": "any",
+      "reason": "find with delete can recursively remove files"
+    },
+    {
+      "name": "Tar extract to system paths",
+      "cmd": "tar",
+      "argPatterns": ["-C\\s*/(etc|usr|bin|sbin|boot|lib|var|root)", "--directory[=\\s]*/(etc|usr|bin|sbin|boot|lib|var|root)"],
+      "flagMode": "any",
+      "reason": "Extracting archives to system directories can overwrite critical files"
+    },
+    {
+      "name": "Unzip to system paths",
+      "cmd": "unzip",
+      "argPatterns": ["-d\\s*/(etc|usr|bin|sbin|boot|lib|var|root)"],
+      "reason": "Extracting to system directories can overwrite critical files"
+    }
+  ],
+
+  "allow": [
+    {
+      "name": "Scratch directory operations",
+      "pathPatterns": ["^\\.llm/scratch/", "^.*/\\.llm/scratch/"],
+      "reason": "Scratch directory is safe for any operation"
+    },
+    {
+      "name": "Node modules cleanup",
+      "cmd": "rm",
+      "pathPatterns": ["node_modules"],
+      "reason": "Cleaning node_modules is common and safe"
+    },
+    {
+      "name": "Build output cleanup",
+      "cmd": "rm",
+      "pathPatterns": ["^dist/", "^build/", "^\\.cache/"],
+      "reason": "Cleaning build outputs is safe"
+    }
+  ]
+}

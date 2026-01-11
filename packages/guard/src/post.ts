@@ -1,0 +1,158 @@
+/**
+ * PostToolUse hook - offloads large outputs to scratch files
+ */
+
+import { mkdirSync, writeFileSync, readdirSync, unlinkSync, statSync } from 'fs';
+import { join } from 'path';
+import { createHash } from 'crypto';
+
+import {
+	readHookInput,
+	writeHookOutput,
+	loadConfig,
+	type PostToolOutput,
+} from '@mcp/core';
+import { countTokens } from '@mcp/core';
+
+import { DEFAULT_CONFIG, type GuardConfig } from './types.js';
+
+/**
+ * Clean up old scratch files
+ */
+function cleanupScratch(scratchDir: string, maxAgeMinutes: number): void {
+	try {
+		const files = readdirSync(scratchDir);
+		const now = Date.now();
+		const maxAge = maxAgeMinutes * 60 * 1000;
+
+		for (const file of files) {
+			if (!file.startsWith('out_')) continue;
+
+			const filepath = join(scratchDir, file);
+			try {
+				const stat = statSync(filepath);
+				if (now - stat.mtimeMs > maxAge) {
+					unlinkSync(filepath);
+				}
+			} catch {
+				// Ignore errors on individual files
+			}
+		}
+	} catch {
+		// Ignore if directory doesn't exist yet
+	}
+}
+
+/**
+ * Generate a short hash for the output
+ */
+function hashOutput(content: string): string {
+	return createHash('md5').update(content).digest('hex').slice(0, 8);
+}
+
+/**
+ * Offload large output to a scratch file
+ */
+export function offloadOutput(
+	output: string,
+	exitCode: number,
+	config: GuardConfig
+): { modified: boolean; result: string } {
+	const tokens = countTokens(output);
+	const lines = output.split('\n');
+
+	// Small output: pass through
+	if (tokens <= config.maxTokens) {
+		return { modified: false, result: output };
+	}
+
+	// Create scratch directory
+	const scratchDir = join(process.cwd(), config.scratchDir);
+	mkdirSync(scratchDir, { recursive: true });
+
+	// Clean up old files
+	cleanupScratch(scratchDir, config.maxAgeMinutes);
+
+	// Save to scratch file
+	const hash = hashOutput(output);
+	const filename = `out_${hash}_exit${exitCode}.txt`;
+	const filepath = join(scratchDir, filename);
+	writeFileSync(filepath, output);
+
+	// Create preview (last N tokens worth of lines)
+	const previewLines: string[] = [];
+	let previewTokens = 0;
+	for (let i = lines.length - 1; i >= 0 && previewTokens < config.previewTokens; i--) {
+		const lineTokens = countTokens(lines[i]);
+		previewLines.unshift(lines[i]);
+		previewTokens += lineTokens;
+	}
+	const preview = previewLines.join('\n');
+
+	// Build pointer message
+	const sizeKB = (output.length / 1024).toFixed(1);
+	const result = [
+		`┌─ Output offloaded (${lines.length} lines, ${sizeKB}KB, ~${tokens} tokens)`,
+		`│ File: ${filepath}`,
+		`│ Hint: grep <pattern> ${filepath}`,
+		`└─ Last ${previewLines.length} lines:`,
+		preview,
+	].join('\n');
+
+	return { modified: true, result };
+}
+
+/**
+ * Main entry point for PostToolUse hook
+ */
+export function runPostGuard(): void {
+	try {
+		const data = readHookInput<PostToolOutput>();
+
+		// Only handle Bash tool
+		if (data.tool_name !== 'Bash') {
+			writeHookOutput(data);
+			return;
+		}
+
+		const stdout = data.tool_result?.stdout || '';
+		const stderr = data.tool_result?.stderr || '';
+		const exitCode = data.tool_result?.exit_code || 0;
+
+		// Load config
+		const config = loadConfig<GuardConfig>('config.json', DEFAULT_CONFIG);
+
+		// Check stdout
+		const stdoutResult = offloadOutput(stdout, exitCode, config);
+
+		// Check stderr (usually smaller, but handle anyway)
+		const stderrResult = offloadOutput(stderr, exitCode, config);
+
+		// If nothing was modified, pass through
+		if (!stdoutResult.modified && !stderrResult.modified) {
+			writeHookOutput(data);
+			return;
+		}
+
+		// Return modified result
+		const result = {
+			...data,
+			tool_result: {
+				...data.tool_result,
+				stdout: stdoutResult.result,
+				stderr: stderrResult.modified ? stderrResult.result : stderr,
+			},
+		};
+
+		writeHookOutput(result);
+	} catch (error) {
+		// On error, try to pass through original
+		console.error('guard post error:', (error as Error).message);
+		try {
+			const data = readHookInput<PostToolOutput>();
+			writeHookOutput(data);
+		} catch {
+			// Nothing we can do
+		}
+	}
+}

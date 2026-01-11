@@ -1,0 +1,10 @@
+{
+  "$schema": "./config-schema.json",
+  "$comment": "Guard configuration. Override via environment variables with GUARD_ prefix.",
+
+  "maxTokens": 2000,
+  "previewTokens": 500,
+  "scratchDir": ".claude/scratch",
+  "maxAgeMinutes": 60,
+  "socketPath": "/tmp/mcp-guard.sock"
+}

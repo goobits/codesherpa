@@ -1,0 +1,20 @@
+{
+  "name": "@mcp/guard",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "guard-pre": "dist/shim.js",
+    "guard-post": "dist/shim.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mcp/core": "workspace:*",
+    "bash-parser": "^0.5.0"
+  }
+}
