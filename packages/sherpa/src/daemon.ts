@@ -14,8 +14,8 @@ import { dirname, join } from 'path';
 import { loadConfig } from '@goobits/sherpa-core';
 import { countTokens } from '@goobits/sherpa-core';
 
-import { checkBashCommand } from './pre.js';
-import { offloadOutput } from './post.js';
+import { checkBashCommand } from './commands/pre.js';
+import { offloadOutput } from './commands/post.js';
 import { DEFAULT_CONFIG, type GuardConfig } from './types.js';
 
 // Load config

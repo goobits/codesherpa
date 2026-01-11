@@ -2,60 +2,87 @@
 
 MCP servers and Claude Code hooks for safer, smarter AI coding.
 
+## Quick Start
+
+```bash
+npm install -g @goobits/sherpa
+sherpa init
+```
+
+This sets up:
+- Claude Code hooks (block dangerous commands, manage output size)
+- Git pre-commit hooks (lint-staged + gitleaks secrets scanning)
+
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| `@goobits/sherpa-core` | Shared utilities (files, git, llm, tokens, hooks) |
-| `@goobits/sherpa-guard` | Pre/Post hooks for Claude Code |
-| `@goobits/sherpa-reviewer` | Code review tools powered by Cerebras |
+| `@goobits/sherpa` | CLI and hooks for Claude Code |
+| `@goobits/sherpa-core` | Shared utilities (files, git, llm, tokens) |
+| `@goobits/sherpa-reviewer` | MCP server for AI code review |
 
-## Quick Start
+## @goobits/sherpa
+
+### CLI Commands
 
 ```bash
-pnpm install
-pnpm build
+sherpa init     # Set up repo (husky, lint-staged, gitleaks, claude hooks)
+sherpa pre      # PreToolUse hook (blocks dangerous commands)
+sherpa post     # PostToolUse hook (offloads large output)
 ```
 
-## @goobits/sherpa-guard
+### What `sherpa init` Creates
 
-Unified command guard with two hooks:
+```
+.claude/
+├── settings.local.json    # Claude Code hook config
+└── guard.json             # Guard settings
+.husky/
+└── pre-commit             # lint-staged + gitleaks
+.lintstagedrc.json         # Lint staged files config
+```
 
-- **PreToolUse** (`guard-pre`): Blocks dangerous bash commands via AST analysis
-- **PostToolUse** (`guard-post`): Offloads large outputs to scratch files
+### Claude Hooks
 
-### Configuration
+Configured automatically in `.claude/settings.local.json`:
 
 ```json
-// .claude/settings.local.json
 {
   "hooks": {
-    "PreToolUse": [{ "matcher": "Bash", "command": "guard-pre" }],
-    "PostToolUse": [{ "matcher": "Bash", "command": "guard-post" }]
+    "PreToolUse": [{ "matcher": "Bash", "command": "sherpa pre" }],
+    "PostToolUse": [{ "matcher": "Bash", "command": "sherpa post" }]
   }
 }
 ```
 
-### Rules
+- **sherpa pre**: Blocks dangerous bash commands (rm -rf, curl|bash, etc.)
+- **sherpa post**: Offloads large outputs to `.claude/scratch/` to prevent context bloat
 
-Edit `packages/guard/rules.json` to customize blocked/allowed commands.
+### Guard Config
 
-### Config
-
-Edit `packages/guard/config.json`:
+Edit `.claude/guard.json`:
 
 ```json
 {
   "maxTokens": 2000,
   "previewTokens": 500,
   "scratchDir": ".claude/scratch",
-  "maxAgeMinutes": 60
+  "maxAgeMinutes": 60,
+  "maxScratchSizeMB": 50
 }
 ```
 
+### Pre-commit Hooks
+
+Runs on every git commit:
+1. **lint-staged** - Lint/format only changed files
+2. **gitleaks** - Scan for secrets (API keys, credentials)
+
+Requires [gitleaks](https://github.com/gitleaks/gitleaks) installed separately.
+
 ## @goobits/sherpa-reviewer
 
-MCP server for AI-powered code review.
+MCP server for AI-powered code review via Cerebras.
 
 ```bash
 # Review files
@@ -66,6 +93,13 @@ cerebras_review_diff("main")
 
 # Ask questions
 cerebras_ask("How does this function work?")
+```
+
+## Development
+
+```bash
+pnpm install
+pnpm build
 ```
 
 ## License

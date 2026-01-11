@@ -1,5 +1,5 @@
 /**
- * PreToolUse hook - blocks dangerous bash commands
+ * sherpa pre - PreToolUse hook that blocks dangerous bash commands
  */
 
 import { readFileSync } from 'fs';
@@ -14,13 +14,13 @@ import {
 	type PreToolInput,
 } from '@goobits/sherpa-core';
 
-import type { ASTNode, RulesConfig } from './types.js';
-import { extractCommands } from './parser.js';
-import { checkCommand, checkPipeline } from './rules.js';
+import type { ASTNode, RulesConfig } from '../types.js';
+import { extractCommands } from '../parser.js';
+import { checkCommand, checkPipeline } from '../rules.js';
 
 // Load rules from JSON config
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const rulesPath = join(__dirname, '..', 'rules.json');
+const rulesPath = join(__dirname, '..', '..', 'rules.json');
 const rules: RulesConfig = JSON.parse(readFileSync(rulesPath, 'utf-8'));
 
 /**
@@ -58,7 +58,7 @@ export function checkBashCommand(command: string): { blocked: boolean; rule?: { 
 /**
  * Main entry point for PreToolUse hook
  */
-export function runPreGuard(): void {
+export function runPre(): void {
 	try {
 		const data = readHookInput<PreToolInput>();
 		const command = data.tool_input?.command;
@@ -70,7 +70,7 @@ export function runPreGuard(): void {
 		const result = checkBashCommand(command);
 
 		if (result.blocked && result.rule) {
-			console.error('BLOCKED by guard');
+			console.error('BLOCKED by sherpa');
 			console.error(`  Rule: ${result.rule.name}`);
 			console.error(`  Reason: ${result.rule.reason}`);
 			console.error(`  Command: ${command}`);
@@ -80,7 +80,7 @@ export function runPreGuard(): void {
 		process.exit(EXIT.ALLOW);
 	} catch (error) {
 		// Graceful degradation: allow on error
-		console.error('guard error:', (error as Error).message);
+		console.error('sherpa pre error:', (error as Error).message);
 		process.exit(EXIT.ALLOW);
 	}
 }

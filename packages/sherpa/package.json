@@ -1,11 +1,9 @@
 {
-  "name": "@goobits/sherpa-guard",
+  "name": "@goobits/sherpa",
   "version": "1.0.0",
   "type": "module",
   "bin": {
-    "guard-pre": "dist/shim.js",
-    "guard-post": "dist/shim.js",
-    "guard-init": "dist/init.js"
+    "sherpa": "dist/cli.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

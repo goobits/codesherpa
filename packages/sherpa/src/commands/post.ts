@@ -1,5 +1,5 @@
 /**
- * PostToolUse hook - offloads large outputs to scratch files
+ * sherpa post - PostToolUse hook that offloads large outputs to scratch files
  */
 
 import { mkdirSync, writeFileSync, readdirSync, unlinkSync, statSync, existsSync } from 'fs';
@@ -11,10 +11,10 @@ import {
 	writeHookOutput,
 	loadConfig,
 	type PostToolOutput,
+	countTokens,
 } from '@goobits/sherpa-core';
-import { countTokens } from '@goobits/sherpa-core';
 
-import { DEFAULT_CONFIG, type GuardConfig } from './types.js';
+import { DEFAULT_CONFIG, type GuardConfig } from '../types.js';
 
 /**
  * Load guard config from .claude/guard.json or fallback locations
@@ -161,7 +161,7 @@ export function offloadOutput(
 /**
  * Main entry point for PostToolUse hook
  */
-export function runPostGuard(): void {
+export function runPost(): void {
 	try {
 		const data = readHookInput<PostToolOutput>();
 
@@ -203,7 +203,7 @@ export function runPostGuard(): void {
 		writeHookOutput(result);
 	} catch (error) {
 		// On error, try to pass through original
-		console.error('guard post error:', (error as Error).message);
+		console.error('sherpa post error:', (error as Error).message);
 		try {
 			const data = readHookInput<PostToolOutput>();
 			writeHookOutput(data);

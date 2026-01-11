@@ -33,15 +33,6 @@ importers:
         specifier: ^1.0.0
         version: 1.0.22
 
-  packages/guard:
-    dependencies:
-      '@goobits/sherpa-core':
-        specifier: workspace:*
-        version: link:../core
-      bash-parser:
-        specifier: ^0.5.0
-        version: 0.5.0
-
   packages/reviewer:
     dependencies:
       '@goobits/sherpa-core':
@@ -50,6 +41,15 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.0.0
         version: 1.25.2(hono@4.11.3)(zod@4.3.5)
+
+  packages/sherpa:
+    dependencies:
+      '@goobits/sherpa-core':
+        specifier: workspace:*
+        version: link:../core
+      bash-parser:
+        specifier: ^0.5.0
+        version: 0.5.0
 
 packages:
 
