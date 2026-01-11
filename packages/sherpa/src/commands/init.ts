@@ -58,10 +58,7 @@ const LINT_STAGED_CONFIG = {
   '*.{js,jsx,ts,tsx,json,md,yml,yaml}': ['prettier --write']
 }
 
-const HUSKY_PRE_COMMIT = `#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-npx lint-staged
+const HUSKY_PRE_COMMIT = `npx lint-staged
 if command -v gitleaks >/dev/null 2>&1; then
 	gitleaks protect --staged --verbose
 else
