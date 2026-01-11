@@ -5,6 +5,18 @@
 import type { ASTNode, CommandInfo, CheckResult, Rule, RulesConfig } from './types.js';
 import { normalizePath, isPathWithinAllowed } from './parser.js';
 
+// Cache compiled RegExp patterns to avoid recompilation on every check
+const regexCache = new Map<string, RegExp>();
+
+function getRegex(pattern: string): RegExp {
+	let regex = regexCache.get(pattern);
+	if (!regex) {
+		regex = getRegex(pattern);
+		regexCache.set(pattern, regex);
+	}
+	return regex;
+}
+
 /**
  * Check if command matches a block rule
  */
@@ -47,7 +59,7 @@ export function matchesBlockRule(cmdInfo: CommandInfo, rule: Rule): boolean {
 			const pathInfo = normalizePath(p);
 			// Check both original AND normalized path for block rules
 			return patterns.some((pattern) => {
-				const regex = new RegExp(pattern);
+				const regex = getRegex(pattern);
 				return regex.test(pathInfo.original) || regex.test(pathInfo.normalized);
 			});
 		});
@@ -61,7 +73,7 @@ export function matchesBlockRule(cmdInfo: CommandInfo, rule: Rule): boolean {
 			: [rule.argPatterns];
 		const rawStr = cmdInfo.raw.join(' ');
 		const matchesArg = patterns.some((pattern) =>
-			new RegExp(pattern).test(rawStr)
+			getRegex(pattern).test(rawStr)
 		);
 		if (!matchesArg) return false;
 	}

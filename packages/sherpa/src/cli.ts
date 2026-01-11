@@ -8,26 +8,27 @@
  *   sherpa post     # PostToolUse hook (offloads large output)
  */
 
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import { runInit } from './commands/init.js';
 import { runPre } from './commands/pre.js';
 import { runPost } from './commands/post.js';
 
-const command = process.argv[2];
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-switch (command) {
-	case 'init':
-		runInit();
-		break;
-	case 'pre':
-		runPre();
-		break;
-	case 'post':
-		runPost();
-		break;
-	case '--help':
-	case '-h':
-	case undefined:
-		console.log(`
+function getVersion(): string {
+	try {
+		const pkgPath = join(__dirname, '..', 'package.json');
+		const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+		return pkg.version || '0.0.0';
+	} catch {
+		return '0.0.0';
+	}
+}
+
+function showHelp(): void {
+	console.log(`
 sherpa - MCP hooks and repo setup for safer AI coding
 
 Usage:
@@ -43,13 +44,37 @@ Examples:
   sherpa init              # First-time setup
   sherpa init --force      # Overwrite existing config
 `);
-		break;
-	case '--version':
-	case '-v':
-		console.log('1.0.0');
-		break;
-	default:
-		console.error(`Unknown command: ${command}`);
-		console.error('Run "sherpa --help" for usage');
-		process.exit(1);
+}
+
+const command = process.argv[2];
+
+try {
+	switch (command) {
+		case 'init':
+			runInit();
+			break;
+		case 'pre':
+			runPre();
+			break;
+		case 'post':
+			runPost();
+			break;
+		case '--help':
+		case '-h':
+		case undefined:
+			showHelp();
+			break;
+		case '--version':
+		case '-v':
+			console.log(getVersion());
+			break;
+		default:
+			console.error(`Unknown command: ${command}`);
+			console.error('Run "sherpa --help" for usage');
+			process.exit(1);
+	}
+} catch (error) {
+	const message = error instanceof Error ? error.message : String(error);
+	console.error(`Error: ${message}`);
+	process.exit(1);
 }

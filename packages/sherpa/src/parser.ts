@@ -2,7 +2,20 @@
  * AST parsing utilities for bash commands
  */
 
+import { homedir } from 'os';
 import type { ASTNode, CommandInfo, PathInfo } from './types.js';
+
+// Cache compiled RegExp patterns
+const regexCache = new Map<string, RegExp>();
+
+function getRegex(pattern: string): RegExp {
+	let regex = regexCache.get(pattern);
+	if (!regex) {
+		regex = new RegExp(pattern);
+		regexCache.set(pattern, regex);
+	}
+	return regex;
+}
 
 /**
  * Normalize a path to prevent traversal attacks
@@ -20,7 +33,7 @@ export function normalizePath(inputPath: string): PathInfo {
 	const original = inputPath;
 
 	// Handle home directory
-	let normalized = inputPath.replace(/^~/, '/home/user');
+	let normalized = inputPath.replace(/^~/, homedir());
 
 	// Split into segments and resolve
 	const segments = normalized.split('/');
@@ -51,7 +64,7 @@ export function isPathWithinAllowed(
 	pathInfo: PathInfo,
 	allowedPattern: string
 ): boolean {
-	const regex = new RegExp(allowedPattern);
+	const regex = getRegex(allowedPattern);
 
 	// If there's traversal, check the NORMALIZED path, not original
 	if (pathInfo.hasTraversal) {

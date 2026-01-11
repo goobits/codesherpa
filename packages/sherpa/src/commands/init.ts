@@ -206,13 +206,16 @@ function setupLintStaged(cwd: string, force: boolean): void {
 
 function checkGitleaks(): void {
 	try {
-		execSync('which gitleaks', { stdio: 'pipe' });
+		// Use 'command -v' on Unix, 'where' on Windows
+		const checkCmd = process.platform === 'win32' ? 'where gitleaks' : 'command -v gitleaks';
+		execSync(checkCmd, { stdio: 'pipe' });
 		console.log('gitleaks found');
 	} catch {
 		console.log('');
 		console.log('NOTE: gitleaks not found. Install it:');
-		console.log('  brew install gitleaks     # macOS');
-		console.log('  apt install gitleaks      # Debian/Ubuntu');
+		console.log('  brew install gitleaks       # macOS');
+		console.log('  apt install gitleaks        # Debian/Ubuntu');
+		console.log('  choco install gitleaks      # Windows');
 		console.log('  https://github.com/gitleaks/gitleaks#installing');
 	}
 }
