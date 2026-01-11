@@ -6,9 +6,9 @@ MCP servers and Claude Code hooks for safer, smarter AI coding.
 
 | Package | Description |
 |---------|-------------|
-| `@mcp/core` | Shared utilities (files, git, llm, tokens, hooks) |
-| `@mcp/guard` | Pre/Post hooks for Claude Code |
-| `@mcp/reviewer` | Code review tools powered by Cerebras |
+| `@goobits/sherpa-core` | Shared utilities (files, git, llm, tokens, hooks) |
+| `@goobits/sherpa-guard` | Pre/Post hooks for Claude Code |
+| `@goobits/sherpa-reviewer` | Code review tools powered by Cerebras |
 
 ## Quick Start
 
@@ -17,7 +17,7 @@ pnpm install
 pnpm build
 ```
 
-## @mcp/guard
+## @goobits/sherpa-guard
 
 Unified command guard with two hooks:
 
@@ -53,7 +53,7 @@ Edit `packages/guard/config.json`:
 }
 ```
 
-## @mcp/reviewer
+## @goobits/sherpa-reviewer
 
 MCP server for AI-powered code review.
 

@@ -11,8 +11,8 @@ import { existsSync, unlinkSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-import { loadConfig } from '@mcp/core';
-import { countTokens } from '@mcp/core';
+import { loadConfig } from '@goobits/sherpa-core';
+import { countTokens } from '@goobits/sherpa-core';
 
 import { checkBashCommand } from './pre.js';
 import { offloadOutput } from './post.js';

@@ -2,7 +2,7 @@
  * cerebras_ask tool - General purpose AI question
  */
 
-import { chat } from '@mcp/core';
+import { chat } from '@goobits/sherpa-core';
 import { ASK_SYSTEM } from '../prompts.js';
 
 export interface AskArgs {

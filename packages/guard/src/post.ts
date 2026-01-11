@@ -11,8 +11,8 @@ import {
 	writeHookOutput,
 	loadConfig,
 	type PostToolOutput,
-} from '@mcp/core';
-import { countTokens } from '@mcp/core';
+} from '@goobits/sherpa-core';
+import { countTokens } from '@goobits/sherpa-core';
 
 import { DEFAULT_CONFIG, type GuardConfig } from './types.js';
 

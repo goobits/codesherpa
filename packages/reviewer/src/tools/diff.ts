@@ -2,7 +2,7 @@
  * cerebras_review_diff tool - Git diff review
  */
 
-import { chat, getDiff } from '@mcp/core';
+import { chat, getDiff } from '@goobits/sherpa-core';
 import { DIFF_REVIEW_SYSTEM } from '../prompts.js';
 
 export interface DiffArgs {

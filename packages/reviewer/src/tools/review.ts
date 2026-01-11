@@ -3,7 +3,7 @@
  */
 
 import { statSync } from 'fs';
-import { chat, findFiles, readFilesWithLimit, CODE_EXTENSIONS } from '@mcp/core';
+import { chat, findFiles, readFilesWithLimit, CODE_EXTENSIONS } from '@goobits/sherpa-core';
 import {
 	CODE_REVIEW_SYSTEM,
 	ARCHITECTURE_SYSTEM,

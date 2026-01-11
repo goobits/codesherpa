@@ -12,7 +12,7 @@ import {
 	readHookInput,
 	EXIT,
 	type PreToolInput,
-} from '@mcp/core';
+} from '@goobits/sherpa-core';
 
 import type { ASTNode, RulesConfig } from './types.js';
 import { extractCommands } from './parser.js';

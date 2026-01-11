@@ -1,5 +1,5 @@
 {
-  "name": "@mcp/guard",
+  "name": "@goobits/sherpa-guard",
   "version": "1.0.0",
   "type": "module",
   "bin": {
@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@mcp/core": "workspace:*",
+    "@goobits/sherpa-core": "workspace:*",
     "bash-parser": "^0.5.0"
   }
 }

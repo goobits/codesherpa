@@ -35,7 +35,7 @@ importers:
 
   packages/guard:
     dependencies:
-      '@mcp/core':
+      '@goobits/sherpa-core':
         specifier: workspace:*
         version: link:../core
       bash-parser:
@@ -44,7 +44,7 @@ importers:
 
   packages/reviewer:
     dependencies:
-      '@mcp/core':
+      '@goobits/sherpa-core':
         specifier: workspace:*
         version: link:../core
       '@modelcontextprotocol/sdk':

@@ -1,5 +1,5 @@
 /**
- * @mcp/core - Shared utilities for MCP servers
+ * @goobits/sherpa-core - Shared utilities for MCP servers
  */
 
 export * from './git.js';
