@@ -245,6 +245,10 @@ function setupMcpConfig(cwd: string, force: boolean): void {
       cwd,
       stdio: 'pipe'
     })
+    execSync('claude mcp remove cerebras-reviewer -s project 2>/dev/null || true', {
+      cwd,
+      stdio: 'pipe'
+    })
     execSync(`claude mcp add reviewer -s project ${nodePath} ${reviewerPath}`, {
       cwd,
       stdio: 'pipe'
@@ -265,6 +269,7 @@ function setupMcpConfig(cwd: string, force: boolean): void {
     }
   }
 
+  delete mcpJson.mcpServers['cerebras-reviewer']
   mcpJson.mcpServers['reviewer'] = mcpConfig
   writeFileSync(mcpPath, `${JSON.stringify(mcpJson, null, 2)}\n`)
   console.log('Configured .mcp.json with reviewer')
