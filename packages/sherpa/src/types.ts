@@ -75,5 +75,5 @@ export const DEFAULT_CONFIG: GuardConfig = {
 	scratchDir: '.claude/scratch',
 	maxAgeMinutes: 60,
 	maxScratchSizeMB: 50,
-	socketPath: '/tmp/mcp-guard.sock',
-};
+	socketPath: '/tmp/mcp-guard.sock'
+}

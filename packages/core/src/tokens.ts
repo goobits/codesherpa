@@ -2,9 +2,9 @@
  * Token counting utilities using tiktoken (Rust/WASM)
  */
 
-import { get_encoding, type Tiktoken } from 'tiktoken';
+import { get_encoding, type Tiktoken } from 'tiktoken'
 
-let encoder: Tiktoken | null = null;
+let encoder: Tiktoken | null = null
 
 /**
  * Get or create the tokenizer instance
@@ -12,16 +12,16 @@ let encoder: Tiktoken | null = null;
 function getEncoder(): Tiktoken {
 	if (!encoder) {
 		// cl100k_base is used by GPT-4, Claude uses similar tokenization
-		encoder = get_encoding('cl100k_base');
+		encoder = get_encoding('cl100k_base')
 	}
-	return encoder;
+	return encoder
 }
 
 /**
  * Count tokens accurately using tiktoken
  */
 export function countTokens(text: string): number {
-	return getEncoder().encode(text).length;
+	return getEncoder().encode(text).length
 }
 
 /**
@@ -29,7 +29,7 @@ export function countTokens(text: string): number {
  * ~4 chars per token for code, useful for quick checks
  */
 export function estimateTokens(text: string): number {
-	return Math.ceil(text.length / 4);
+	return Math.ceil(text.length / 4)
 }
 
 /**
@@ -38,23 +38,23 @@ export function estimateTokens(text: string): number {
 export function exceedsTokenLimit(text: string, limit: number): boolean {
 	// Quick estimate first
 	if (estimateTokens(text) < limit * 0.8) {
-		return false;
+		return false
 	}
 	// Accurate count if close to limit
-	return countTokens(text) > limit;
+	return countTokens(text) > limit
 }
 
 /**
  * Truncate text to fit within token limit
  */
 export function truncateToTokens(text: string, maxTokens: number): string {
-	const tokens = getEncoder().encode(text);
+	const tokens = getEncoder().encode(text)
 	if (tokens.length <= maxTokens) {
-		return text;
+		return text
 	}
-	const truncated = tokens.slice(0, maxTokens);
-	const decoded = getEncoder().decode(truncated);
-	return new TextDecoder().decode(decoded);
+	const truncated = tokens.slice(0, maxTokens)
+	const decoded = getEncoder().decode(truncated)
+	return new TextDecoder().decode(decoded)
 }
 
 /**
@@ -62,7 +62,7 @@ export function truncateToTokens(text: string, maxTokens: number): string {
  */
 export function freeEncoder(): void {
 	if (encoder) {
-		encoder.free();
-		encoder = null;
+		encoder.free()
+		encoder = null
 	}
 }

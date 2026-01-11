@@ -2,7 +2,7 @@
  * cerebras_analyze tool - Architectural questions
  */
 
-import { review } from './review.js';
+import { review } from './review.js'
 
 export interface AnalyzeArgs {
 	path: string;
@@ -13,8 +13,8 @@ export async function analyze(args: AnalyzeArgs): Promise<string> {
 	return review({
 		paths: args.path,
 		question: args.question,
-		focus: 'architecture',
-	});
+		focus: 'architecture'
+	})
 }
 
 export const analyzeTool = {
@@ -25,13 +25,13 @@ export const analyzeTool = {
 		properties: {
 			path: {
 				type: 'string',
-				description: 'Path to file or directory to analyze',
+				description: 'Path to file or directory to analyze'
 			},
 			question: {
 				type: 'string',
-				description: 'The architectural question to answer',
-			},
+				description: 'The architectural question to answer'
+			}
 		},
-		required: ['path', 'question'],
-	},
-};
+		required: [ 'path', 'question' ]
+	}
+}

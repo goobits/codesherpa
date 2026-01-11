@@ -2,8 +2,9 @@
  * cerebras_ask tool - General purpose AI question
  */
 
-import { chat } from '@goobits/sherpa-core';
-import { ASK_SYSTEM } from '../prompts.js';
+import { chat } from '@goobits/sherpa-core'
+
+import { ASK_SYSTEM } from '../prompts.js'
 
 export interface AskArgs {
 	prompt: string;
@@ -12,8 +13,8 @@ export interface AskArgs {
 
 export async function ask(args: AskArgs): Promise<string> {
 	return chat(args.prompt, {
-		system: args.system || ASK_SYSTEM,
-	});
+		system: args.system || ASK_SYSTEM
+	})
 }
 
 export const askTool = {
@@ -24,13 +25,13 @@ export const askTool = {
 		properties: {
 			prompt: {
 				type: 'string',
-				description: 'The question to ask',
+				description: 'The question to ask'
 			},
 			system: {
 				type: 'string',
-				description: 'Optional custom system prompt',
-			},
+				description: 'Optional custom system prompt'
+			}
 		},
-		required: ['prompt'],
-	},
-};
+		required: [ 'prompt' ]
+	}
+}

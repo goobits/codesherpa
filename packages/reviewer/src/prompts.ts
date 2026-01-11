@@ -20,7 +20,7 @@ Format your response as:
 ## Verdict
 [production-ready / needs fixes / major concerns]
 
-Be concise. Prioritize actionable feedback over praise.`;
+Be concise. Prioritize actionable feedback over praise.`
 
 export const DIFF_REVIEW_SYSTEM = `You are reviewing a git diff. Focus on:
 
@@ -28,7 +28,7 @@ export const DIFF_REVIEW_SYSTEM = `You are reviewing a git diff. Focus on:
 2. **Issues** - Bugs, security concerns, or regressions introduced
 3. **Suggestions** - Concrete improvements (if any)
 
-Be brief. Skip obvious or trivial observations. Flag anything that could break production.`;
+Be brief. Skip obvious or trivial observations. Flag anything that could break production.`
 
 export const ARCHITECTURE_SYSTEM = `You are a software architect analyzing code structure.
 
@@ -39,10 +39,10 @@ Focus on:
 2. **Patterns** - Design patterns in use, antipatterns detected
 3. **Scalability** - Bottlenecks, extension points, rigidity
 
-Answer the specific question asked. Be direct and technical.`;
+Answer the specific question asked. Be direct and technical.`
 
 export const ASK_SYSTEM = `You are a helpful AI assistant with expertise in software engineering.
-Be concise and direct. Provide code examples when helpful.`;
+Be concise and direct. Provide code examples when helpful.`
 
 /** Focus-specific instructions */
 export const FOCUS_INSTRUCTIONS: Record<string, string> = {
@@ -53,5 +53,5 @@ export const FOCUS_INSTRUCTIONS: Record<string, string> = {
 		'Focus especially on performance issues, algorithmic complexity, and resource usage.',
 	architecture:
 		'Focus especially on design patterns, SOLID principles, and code organization.',
-	style: 'Focus especially on code style, readability, and maintainability.',
-};
+	style: 'Focus especially on code style, readability, and maintainability.'
+}

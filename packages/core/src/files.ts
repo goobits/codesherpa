@@ -2,9 +2,10 @@
  * File utilities: glob patterns, line-numbered formatting
  */
 
-import { glob } from 'glob';
-import { readFileSync, statSync } from 'fs';
-import { filterIgnored } from './git.js';
+import { readFileSync, statSync } from 'fs'
+import { glob } from 'glob'
+
+import { filterIgnored } from './git.js'
 
 /** Code file extensions to include */
 export const CODE_EXTENSIONS = new Set([
@@ -23,8 +24,8 @@ export const CODE_EXTENSIONS = new Set([
 	'.yaml',
 	'.yml',
 	'.toml',
-	'.md',
-]);
+	'.md'
+])
 
 /**
  * Find files matching glob pattern, respecting .gitignore
@@ -41,43 +42,43 @@ export async function findFiles(
 			'**/dist/**',
 			'**/build/**',
 			'**/__pycache__/**',
-			'**/.git/**',
+			'**/.git/**'
 		],
 		nodir: true,
-		dot: false,
-	});
+		dot: false
+	})
 
 	// Filter by .gitignore
-	let filtered = filterIgnored(files);
+	let filtered = filterIgnored(files)
 
 	// Filter by code extensions if requested
 	if (options.codeOnly) {
-		filtered = filtered.filter((f) => {
-			const ext = f.substring(f.lastIndexOf('.'));
-			return CODE_EXTENSIONS.has(ext);
-		});
+		filtered = filtered.filter(f => {
+			const ext = f.substring(f.lastIndexOf('.'))
+			return CODE_EXTENSIONS.has(ext)
+		})
 	}
 
-	return filtered.sort();
+	return filtered.sort()
 }
 
 /**
  * Format file content with line numbers
  */
 export function formatWithLineNumbers(path: string): string {
-	const content = readFileSync(path, 'utf8');
-	const lines = content.split('\n');
-	const totalLines = lines.length;
+	const content = readFileSync(path, 'utf8')
+	const lines = content.split('\n')
+	const totalLines = lines.length
 
 	const numbered = lines.map(
-		(line, i) => `${String(i + 1).padStart(4)} | ${line}`
-	);
+		(line, i) => `${ String(i + 1).padStart(4) } | ${ line }`
+	)
 
 	return `
---- BEGIN FILE: ${path} (lines 1-${totalLines}) ---
-${numbered.join('\n')}
---- END FILE: ${path} ---
-`;
+--- BEGIN FILE: ${ path } (lines 1-${ totalLines }) ---
+${ numbered.join('\n') }
+--- END FILE: ${ path } ---
+`
 }
 
 /**
@@ -87,28 +88,28 @@ export function readFilesWithLimit(
 	paths: string[],
 	maxBytes: number = 120_000
 ): { files: string[]; truncated: number } {
-	const files: string[] = [];
-	let totalSize = 0;
-	let truncated = 0;
+	const files: string[] = []
+	let totalSize = 0
+	let truncated = 0
 
 	for (const path of paths) {
 		try {
-			const stat = statSync(path);
-			const formatted = formatWithLineNumbers(path);
+			const stat = statSync(path)
+			const formatted = formatWithLineNumbers(path)
 
 			if (totalSize + formatted.length > maxBytes) {
-				truncated = paths.length - files.length;
-				break;
+				truncated = paths.length - files.length
+				break
 			}
 
-			files.push(formatted);
-			totalSize += formatted.length;
+			files.push(formatted)
+			totalSize += formatted.length
 		} catch {
 			// Skip unreadable files
 		}
 	}
 
-	return { files, truncated };
+	return { files, truncated }
 }
 
 /**
@@ -116,9 +117,9 @@ export function readFilesWithLimit(
  */
 export function isFile(path: string): boolean {
 	try {
-		return statSync(path).isFile();
+		return statSync(path).isFile()
 	} catch {
-		return false;
+		return false
 	}
 }
 
@@ -127,8 +128,8 @@ export function isFile(path: string): boolean {
  */
 export function isDirectory(path: string): boolean {
 	try {
-		return statSync(path).isDirectory();
+		return statSync(path).isDirectory()
 	} catch {
-		return false;
+		return false
 	}
 }

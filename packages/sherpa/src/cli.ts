@@ -8,22 +8,23 @@
  *   sherpa post     # PostToolUse hook (offloads large output)
  */
 
-import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
-import { runInit } from './commands/init.js';
-import { runPre } from './commands/pre.js';
-import { runPost } from './commands/post.js';
+import { readFileSync } from 'fs'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { runInit } from './commands/init.js'
+import { runPost } from './commands/post.js'
+import { runPre } from './commands/pre.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 function getVersion(): string {
 	try {
-		const pkgPath = join(__dirname, '..', 'package.json');
-		const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-		return pkg.version || '0.0.0';
+		const pkgPath = join(__dirname, '..', 'package.json')
+		const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+		return pkg.version || '0.0.0'
 	} catch {
-		return '0.0.0';
+		return '0.0.0'
 	}
 }
 
@@ -43,38 +44,38 @@ Options:
 Examples:
   sherpa init              # First-time setup
   sherpa init --force      # Overwrite existing config
-`);
+`)
 }
 
-const command = process.argv[2];
+const command = process.argv[2]
 
 try {
 	switch (command) {
 		case 'init':
-			runInit();
-			break;
+			runInit()
+			break
 		case 'pre':
-			runPre();
-			break;
+			runPre()
+			break
 		case 'post':
-			runPost();
-			break;
+			runPost()
+			break
 		case '--help':
 		case '-h':
 		case undefined:
-			showHelp();
-			break;
+			showHelp()
+			break
 		case '--version':
 		case '-v':
-			console.log(getVersion());
-			break;
+			console.log(getVersion())
+			break
 		default:
-			console.error(`Unknown command: ${command}`);
-			console.error('Run "sherpa --help" for usage');
-			process.exit(1);
+			console.error(`Unknown command: ${ command }`)
+			console.error('Run "sherpa --help" for usage')
+			process.exit(1)
 	}
-} catch (error) {
-	const message = error instanceof Error ? error.message : String(error);
-	console.error(`Error: ${message}`);
-	process.exit(1);
+} catch(error) {
+	const message = error instanceof Error ? error.message : String(error)
+	console.error(`Error: ${ message }`)
+	process.exit(1)
 }

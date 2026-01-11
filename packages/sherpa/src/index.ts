@@ -7,9 +7,9 @@
  *   sherpa post  - PostToolUse hook (offloads large output)
  */
 
-export * from './types.js';
-export * from './parser.js';
-export * from './rules.js';
-export { checkBashCommand, runPre } from './commands/pre.js';
-export { offloadOutput, runPost } from './commands/post.js';
-export { runInit } from './commands/init.js';
+export { runInit } from './commands/init.js'
+export { offloadOutput, runPost } from './commands/post.js'
+export { checkBashCommand, runPre } from './commands/pre.js'
+export * from './parser.js'
+export * from './rules.js'
+export * from './types.js'
