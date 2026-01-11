@@ -65,28 +65,28 @@ export async function review(args: ReviewArgs): Promise<string> {
     focus = 'general',
     base = 'HEAD~1',
     path,
-    prompt,
-    system,
+    prompt: askPrompt,
+    system: askSystem,
     provider,
     dryRun = false
   } = args
 
   if (mode === 'ask') {
-    if (!prompt) {
+    if (!askPrompt) {
       return 'Missing required "prompt" for ask mode.'
     }
 
-    const systemPrompt = system || ASK_SYSTEM
+    const systemPrompt = askSystem || ASK_SYSTEM
 
     if (dryRun) {
       return formatDryRunSummary({
         mode,
         system: systemPrompt,
-        prompt
+        prompt: askPrompt
       })
     }
 
-    return chat(prompt, { system: systemPrompt, provider: provider || undefined })
+    return chat(askPrompt, { system: systemPrompt, provider: provider || undefined })
   }
 
   if (mode === 'diff') {
@@ -156,25 +156,25 @@ export async function review(args: ReviewArgs): Promise<string> {
   const focusText = FOCUS_INSTRUCTIONS[focus] || FOCUS_INSTRUCTIONS.general
   const instruction = question ? `${focusText}\n\nSpecific question: ${question}` : focusText
 
-  const prompt = `${instruction}
+  const promptText = `${instruction}
 
 Review the following ${files.length} file(s). For each issue, cite the specific \`filename:line_number\`.
 
 ${formattedContent}`
 
-  const system = focus === 'architecture' ? ARCHITECTURE_SYSTEM : CODE_REVIEW_SYSTEM
+  const systemPrompt = focus === 'architecture' ? ARCHITECTURE_SYSTEM : CODE_REVIEW_SYSTEM
 
   if (dryRun) {
     return formatDryRunSummary({
       mode,
-      system,
-      prompt,
+      system: systemPrompt,
+      prompt: promptText,
       fileCount: files.length,
       truncated
     })
   }
 
-  return chat(prompt, { system })
+  return chat(promptText, { system: systemPrompt })
 }
 
 export const reviewTool = {
