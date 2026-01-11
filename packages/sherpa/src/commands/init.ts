@@ -54,6 +54,12 @@ Use the MCP tool \`review\` with the arguments provided by the user.
 If no arguments are given, ask for the paths or mode.
 `
 
+const TREE_COMMAND = `# tree
+
+Use the MCP tool \`tree\` with the arguments provided by the user.
+If no arguments are given, show the default repo tree.
+`
+
 const LINT_STAGED_CONFIG = {
   '*.{js,jsx,ts,tsx,json,md,yml,yaml}': ['prettier --write']
 }
@@ -124,6 +130,7 @@ export function runInit(): void {
   console.log('  [x] .claude/settings.local.json - Hooks')
   console.log('  [x] .claude/guard.json - Guard config')
   console.log('  [x] .claude/commands/review.md - Slash command')
+  console.log('  [x] .claude/commands/tree.md - Slash command')
   console.log('  [x] .mcp.json - MCP servers')
   console.log('  [x] .husky/pre-commit - Git pre-commit hook')
   console.log('  [x] .lintstagedrc.json - Lint staged files')
@@ -198,6 +205,7 @@ function setupClaudeCommands(cwd: string, force: boolean): void {
   const claudeDir = join(cwd, '.claude')
   const commandsDir = join(claudeDir, 'commands')
   const reviewCommandPath = join(commandsDir, 'review.md')
+  const treeCommandPath = join(commandsDir, 'tree.md')
 
   if (!existsSync(commandsDir)) {
     mkdirSync(commandsDir, { recursive: true })
@@ -208,6 +216,13 @@ function setupClaudeCommands(cwd: string, force: boolean): void {
     console.log('Created .claude/commands/review.md')
   } else {
     console.log('.claude/commands/review.md already exists')
+  }
+
+  if (!existsSync(treeCommandPath) || force) {
+    writeFileSync(treeCommandPath, TREE_COMMAND)
+    console.log('Created .claude/commands/tree.md')
+  } else {
+    console.log('.claude/commands/tree.md already exists')
   }
 }
 

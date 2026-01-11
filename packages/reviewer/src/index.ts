@@ -10,6 +10,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 
 import { review, type ReviewArgs, reviewTool } from './tools/review.js'
+import { tree, type TreeArgs, treeTool } from './tools/tree.js'
 
 // Create MCP server
 const server = new Server(
@@ -26,7 +27,7 @@ const server = new Server(
 
 // List available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [reviewTool]
+  tools: [reviewTool, treeTool]
 }))
 
 function tokenizeArgs(input: string): string[] {
@@ -151,6 +152,42 @@ function parseReviewArgs(args: unknown): ReviewArgs {
   return parsed
 }
 
+function parseTreeArgs(args: unknown): TreeArgs {
+  if (typeof args !== 'string') {
+    return (args || {}) as TreeArgs
+  }
+
+  const tokens = tokenizeArgs(args)
+  const parsed: TreeArgs = {}
+  const remaining: string[] = []
+
+  for (let i = 0; i < tokens.length; i += 1) {
+    const token = tokens[i]
+
+    switch (token) {
+      case '--summary':
+        parsed.summary = true
+        break
+      case '--stats':
+        parsed.stats = true
+        break
+      case '--depth':
+        parsed.depth = Number.parseInt(tokens[i + 1] || '', 10)
+        i += 1
+        break
+      default:
+        remaining.push(token)
+        break
+    }
+  }
+
+  if (remaining.length > 0) {
+    parsed.pattern = remaining.join(' ')
+  }
+
+  return parsed
+}
+
 // Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params
@@ -161,6 +198,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (name) {
       case 'review':
         result = await review(parseReviewArgs(args))
+        break
+      case 'tree':
+        result = await tree(parseTreeArgs(args))
         break
       default:
         throw new Error(`Unknown tool: ${name}`)
