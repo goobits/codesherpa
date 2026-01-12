@@ -1,9 +1,9 @@
-import { chat, findFiles, getDiff, readFilesWithLimit, type Provider } from '@goobits/sherpa-core'
+import { chat, findFiles, getDiff, type Provider, readFilesWithLimit } from '@goobits/sherpa-core'
 import { statSync } from 'fs'
 
 import {
-  ASK_SYSTEM,
   ARCHITECTURE_SYSTEM,
+  ASK_SYSTEM,
   CODE_REVIEW_SYSTEM,
   DIFF_REVIEW_SYSTEM,
   FOCUS_INSTRUCTIONS
