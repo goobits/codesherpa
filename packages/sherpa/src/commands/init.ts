@@ -5,6 +5,7 @@
  */
 
 import { execSync } from 'child_process'
+import { createRequire } from 'module'
 import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { dirname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
@@ -87,13 +88,24 @@ function getNodePath(): string {
  * Get absolute path to reviewer dist
  */
 function getReviewerPath(): string {
+  const require = createRequire(import.meta.url)
+  const bundledPath = resolve(__dirname, '..', 'reviewer', 'index.js')
+  if (existsSync(bundledPath)) {
+    return bundledPath
+  }
+  try {
+    return require.resolve('@goobits/sherpa-reviewer/dist/index.js')
+  } catch {
+    // Fall through to monorepo path
+  }
+
   // __dirname is packages/sherpa/dist/commands in compiled code
   // Reviewer is at packages/reviewer/dist/index.js
   const reviewerPath = resolve(__dirname, '../../../reviewer/dist/index.js')
   if (existsSync(reviewerPath)) {
     return reviewerPath
   }
-  // Fallback: try to find via node_modules or global
+
   return reviewerPath
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@goobits/sherpa",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI guard for safer AI coding - blocks dangerous bash commands and manages output context",
   "type": "module",
   "bin": {
@@ -12,7 +12,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --emitDeclarationOnly && node scripts/build.mjs",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -37,10 +37,16 @@
     "directory": "packages/sherpa"
   },
   "dependencies": {
-    "@goobits/sherpa-core": "workspace:*",
-    "bash-parser": "^0.5.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "bash-parser": "^0.5.0",
+    "glob": "^10.4.0",
+    "ignore": "^5.3.0",
+    "openai": "^4.77.0",
+    "tiktoken": "^1.0.0"
   },
   "devDependencies": {
+    "@goobits/sherpa-core": "workspace:*",
+    "esbuild": "^0.23.0",
     "vitest": "^2.0.0"
   }
 }

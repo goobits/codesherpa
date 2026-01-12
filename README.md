@@ -2,17 +2,15 @@
 
 MCP servers and Claude Code hooks for safer, smarter AI coding.
 
-## Quick Start
+## Quick Start (NPX)
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/goobits/mcp-sherpa.git
-cd mcp-sherpa
-./install.sh
-
-# 2. Set up your project
+# 1. Set up your project
 cd ~/your-project
-sherpa init
+npx @goobits/sherpa init
+
+# 2. Add your API key
+echo "CEREBRAS_API_KEY=..." >> .env
 
 # 3. Restart Claude Code
 ```
@@ -64,7 +62,7 @@ Configured in `.mcp.json`:
     "reviewer": {
       "type": "stdio",
       "command": "/path/to/node",
-      "args": ["/path/to/reviewer/dist/index.js"]
+      "args": ["/path/to/@goobits/sherpa/dist/reviewer/index.js"]
     }
   }
 }
@@ -84,14 +82,6 @@ Examples:
 /review --ask "How does the auth flow work?"
 /review --ask "Summarize this repo" --dry
 ```
-
-## Packages
-
-| Package                    | Description                   |
-| -------------------------- | ----------------------------- |
-| `@goobits/sherpa`          | CLI and hooks for Claude Code |
-| `@goobits/sherpa-core`     | Shared utilities              |
-| `@goobits/sherpa-reviewer` | MCP server for AI code review |
 
 ## CLI Commands
 
@@ -123,6 +113,14 @@ Edit `.claude/guard.json`:
 ```bash
 pnpm install
 pnpm build
+```
+
+## Local install
+
+```bash
+git clone https://github.com/goobits/mcp-sherpa.git
+cd mcp-sherpa
+./install.sh
 ```
 
 ## Troubleshooting
