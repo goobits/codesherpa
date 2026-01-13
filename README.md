@@ -43,10 +43,16 @@ Configured in `.claude/settings.local.json`:
 {
   "hooks": {
     "PreToolUse": [
-      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "sherpa pre" }] }
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "sherpa pre" }]
+      }
     ],
     "PostToolUse": [
-      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "sherpa post" }] }
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "sherpa post" }]
+      }
     ]
   }
 }
@@ -123,7 +129,8 @@ pnpm build
 ```bash
 git clone https://github.com/goobits/mcp-sherpa.git
 cd mcp-sherpa
-./install.sh
+./install.sh           # installs to ~/.local/bin (no sudo)
+./install.sh --system  # installs to /usr/local/bin (uses sudo if needed)
 ```
 
 ## Troubleshooting

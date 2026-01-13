@@ -8,12 +8,16 @@ ORIGINAL_PWD="$(pwd)"
 
 INIT_AFTER_INSTALL="false"
 INIT_DIR=""
+SYSTEM_INSTALL="false"
+BIN_DIR_OVERRIDE=""
 
 print_usage() {
-	echo "Usage: ./install.sh [--init [path]] [--help]"
+	echo "Usage: ./install.sh [--init [path]] [--system] [--bin-dir <path>] [--help]"
 	echo ""
 	echo "Options:"
 	echo "  --init [path]   Run 'sherpa init' after install (default: current directory)"
+	echo "  --system        Install to /usr/local/bin (uses sudo if needed)"
+	echo "  --bin-dir       Install to a custom bin directory"
 	echo "  --help          Show this help message"
 }
 
@@ -26,6 +30,18 @@ while [ "$#" -gt 0 ]; do
                 INIT_DIR="$1"
                 shift
             fi
+            ;;
+        --system)
+            SYSTEM_INSTALL="true"
+            shift
+            ;;
+        --bin-dir)
+            if [ -z "${2:-}" ] || [ "${2#--}" != "$2" ]; then
+                echo "Error: --bin-dir requires a path"
+                exit 1
+            fi
+            BIN_DIR_OVERRIDE="$2"
+            shift 2
             ;;
         --help|-h)
             print_usage
@@ -57,34 +73,37 @@ pnpm build
 USE_SUDO=""
 BIN_DIR=""
 
-# Try /usr/local/bin first (standard on macOS and Linux)
-if [ -d "/usr/local/bin" ]; then
-    if [ -w "/usr/local/bin" ]; then
-        BIN_DIR="/usr/local/bin"
+if [ -n "$BIN_DIR_OVERRIDE" ]; then
+    BIN_DIR="$BIN_DIR_OVERRIDE"
+    mkdir -p "$BIN_DIR"
+elif [ "$SYSTEM_INSTALL" = "true" ]; then
+    BIN_DIR="/usr/local/bin"
+    if [ -w "$BIN_DIR" ]; then
+        :
     elif command -v sudo &> /dev/null; then
-        BIN_DIR="/usr/local/bin"
         USE_SUDO="sudo"
-        echo "Using sudo to install to /usr/local/bin..."
+        echo "Using sudo to install to $BIN_DIR..."
+    else
+        echo "Error: $BIN_DIR is not writable and sudo is not available."
+        exit 1
     fi
-fi
-
-# Fallback to ~/.local/bin (XDG standard)
-if [ -z "$BIN_DIR" ]; then
+else
     BIN_DIR="$HOME/.local/bin"
     mkdir -p "$BIN_DIR"
 
-    # Check if BIN_DIR is in PATH (POSIX-compatible)
-    case ":$PATH:" in
-        *":$BIN_DIR:"*) ;;
-        *)
-            echo ""
-            echo "WARNING: $BIN_DIR is not in your PATH."
-            echo "Add this to your shell config (~/.bashrc, ~/.zshrc, etc.):"
-            echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
-            echo ""
-            ;;
-    esac
 fi
+
+# Check if BIN_DIR is in PATH (POSIX-compatible)
+case ":$PATH:" in
+    *":$BIN_DIR:"*) ;;
+    *)
+        echo ""
+        echo "WARNING: $BIN_DIR is not in your PATH."
+        echo "Add this to your shell config (~/.bashrc, ~/.zshrc, etc.):"
+        echo "  export PATH=\"${BIN_DIR}:\$PATH\""
+        echo ""
+        ;;
+esac
 
 # Create wrapper scripts (more portable than symlinks)
 $USE_SUDO tee "$BIN_DIR/sherpa" > /dev/null << EOF
