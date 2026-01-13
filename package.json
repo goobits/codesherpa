@@ -5,7 +5,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -r --parallel dev",
-    "release:sherpa": "npm publish --access public --prefix packages/sherpa",
+    "release:sherpa": "cd packages/sherpa && npm publish --access public",
     "typecheck": "pnpm -r typecheck",
     "link": "cd packages/sherpa && pnpm link --global && cd ../reviewer && pnpm link --global",
     "prepare": "husky"
