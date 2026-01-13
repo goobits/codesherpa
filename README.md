@@ -9,6 +9,9 @@ MCP servers and Claude Code hooks for safer, smarter AI coding.
 cd ~/your-project
 npx @goobits/sherpa init
 
+# (Recommended) Keep .mcp.json portable
+pnpm add -D @goobits/sherpa
+
 # 2. Add your API key
 echo "CEREBRAS_API_KEY=..." >> .env
 
@@ -61,8 +64,8 @@ Configured in `.mcp.json`:
   "mcpServers": {
     "reviewer": {
       "type": "stdio",
-      "command": "/path/to/node",
-      "args": ["/path/to/@goobits/sherpa/dist/reviewer/index.js"]
+      "command": "node",
+      "args": ["./node_modules/@goobits/sherpa/dist/reviewer/index.js"]
     }
   }
 }
@@ -128,7 +131,7 @@ cd mcp-sherpa
 ### MCP server not connecting
 
 1. Check `.mcp.json` has `"type": "stdio"`
-2. Ensure paths are absolute
+2. Ensure paths are project-relative or the `reviewer` binary is on PATH
 3. Restart Claude Code completely
 4. Run `claude mcp list` to verify
 

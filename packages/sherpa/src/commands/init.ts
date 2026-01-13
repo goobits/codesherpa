@@ -62,17 +62,6 @@ fi
 `
 
 /**
- * Get absolute path to node binary
- */
-function getNodePath(): string {
-  try {
-    return execSync('which node', { encoding: 'utf-8' }).trim()
-  } catch {
-    return 'node' // fallback
-  }
-}
-
-/**
  * Get absolute path to reviewer dist
  */
 function getReviewerPath(): string {
@@ -95,6 +84,46 @@ function getReviewerPath(): string {
   }
 
   return reviewerPath
+}
+
+function commandExists(command: string): boolean {
+  try {
+    const checkCmd = process.platform === 'win32' ? `where ${command}` : `command -v ${command}`
+    execSync(checkCmd, { stdio: 'pipe' })
+    return true
+  } catch {
+    return false
+  }
+}
+
+function getLocalReviewerPath(cwd: string): string | null {
+  const localPath = join(cwd, 'node_modules', '@goobits', 'sherpa', 'dist', 'reviewer', 'index.js')
+  if (existsSync(localPath)) {
+    return './node_modules/@goobits/sherpa/dist/reviewer/index.js'
+  }
+
+  return null
+}
+
+function quoteArg(arg: string): string {
+  if (/^[A-Za-z0-9_./:@-]+$/.test(arg)) {
+    return arg
+  }
+
+  return `"${arg.replace(/"/g, '\\"')}"`
+}
+
+function getMcpCommand(cwd: string): { command: string; args: string[]; isPortable: boolean } {
+  const localReviewer = getLocalReviewerPath(cwd)
+  if (localReviewer) {
+    return { command: 'node', args: [localReviewer], isPortable: true }
+  }
+
+  if (commandExists('reviewer')) {
+    return { command: 'reviewer', args: [], isPortable: true }
+  }
+
+  return { command: 'node', args: [getReviewerPath()], isPortable: false }
 }
 
 export function runInit(): void {
@@ -199,8 +228,7 @@ function setupClaudeHooks(cwd: string, force: boolean): void {
 function setupMcpConfig(cwd: string, force: boolean): void {
   const mcpPath = join(cwd, '.mcp.json')
   const settingsPath = join(cwd, '.claude/settings.local.json')
-  const nodePath = getNodePath()
-  const reviewerPath = getReviewerPath()
+  const mcpCommand = getMcpCommand(cwd)
 
   // 1. Clean up stale MCP config from settings.local.json (wrong location)
   if (existsSync(settingsPath)) {
@@ -218,9 +246,14 @@ function setupMcpConfig(cwd: string, force: boolean): void {
 
   const mcpConfig: McpServer = {
     type: 'stdio',
-    command: nodePath,
-    args: [reviewerPath],
+    command: mcpCommand.command,
+    args: mcpCommand.args,
     env: {}
+  }
+
+  if (!mcpCommand.isPortable) {
+    console.warn('Warning: reviewer path is outside the project.')
+    console.warn('Install @goobits/sherpa locally (devDependency) to keep .mcp.json portable.')
   }
 
   // 2. Try using claude CLI first (most reliable)
@@ -234,7 +267,17 @@ function setupMcpConfig(cwd: string, force: boolean): void {
       cwd,
       stdio: 'pipe'
     })
-    execSync(`claude mcp add reviewer -s project ${nodePath} ${reviewerPath}`, {
+    const addArgs = [
+      'claude',
+      'mcp',
+      'add',
+      'reviewer',
+      '-s',
+      'project',
+      mcpCommand.command,
+      ...mcpCommand.args
+    ]
+    execSync(addArgs.map(quoteArg).join(' '), {
       cwd,
       stdio: 'pipe'
     })
@@ -263,7 +306,8 @@ function setupMcpConfig(cwd: string, force: boolean): void {
   try {
     const testMsg =
       '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0.0"}}}'
-    execSync(`echo '${testMsg}' | "${nodePath}" "${reviewerPath}"`, {
+    const runCommand = [mcpCommand.command, ...mcpCommand.args].map(quoteArg).join(' ')
+    execSync(`echo '${testMsg}' | ${runCommand}`, {
       stdio: 'pipe',
       timeout: 5000
     })
