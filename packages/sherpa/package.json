@@ -1,6 +1,6 @@
 {
   "name": "@goobits/sherpa",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CLI guard for safer AI coding - blocks dangerous bash commands and manages output context",
   "type": "module",
   "bin": {
@@ -9,7 +9,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "rules.json",
+    "config.json"
   ],
   "scripts": {
     "build": "tsc --emitDeclarationOnly && node scripts/build.mjs",
