@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build && npm run test"
+    "prepublishOnly": "pnpm run build && pnpm run test"
   },
   "keywords": [
     "claude",
