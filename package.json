@@ -5,7 +5,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -r --parallel dev",
-    "release:sherpa": "cd packages/sherpa && npm publish --access public",
+    "release:sherpa": "pnpm install && pnpm -r --filter @goobits/sherpa-core build && node packages/sherpa/scripts/bump-if-published.mjs && cd packages/sherpa && npm publish --access public",
     "typecheck": "pnpm -r typecheck",
     "link": "cd packages/sherpa && pnpm link --global && cd ../reviewer && pnpm link --global",
     "prepare": "husky"
