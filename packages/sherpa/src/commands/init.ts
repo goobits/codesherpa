@@ -105,6 +105,67 @@ function getLocalReviewerPath(cwd: string): string | null {
   return null
 }
 
+function getPackageManager(cwd: string): 'pnpm' | 'npm' | 'yarn' | 'bun' | null {
+  const pkgPath = join(cwd, 'package.json')
+  if (existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { packageManager?: string }
+      if (pkg.packageManager) {
+        const name = pkg.packageManager.split('@')[0]
+        if (name === 'pnpm' || name === 'npm' || name === 'yarn' || name === 'bun') {
+          return name
+        }
+      }
+    } catch {}
+  }
+
+  if (existsSync(join(cwd, 'pnpm-lock.yaml'))) {
+    return 'pnpm'
+  }
+  if (existsSync(join(cwd, 'yarn.lock'))) {
+    return 'yarn'
+  }
+  if (existsSync(join(cwd, 'package-lock.json'))) {
+    return 'npm'
+  }
+  if (existsSync(join(cwd, 'bun.lockb'))) {
+    return 'bun'
+  }
+
+  return null
+}
+
+function installLocalSherpa(cwd: string): boolean {
+  const pkgPath = join(cwd, 'package.json')
+  if (!existsSync(pkgPath)) {
+    return false
+  }
+
+  const packageManager = getPackageManager(cwd)
+  if (!packageManager || !commandExists(packageManager)) {
+    return false
+  }
+
+  const installCommand =
+    packageManager === 'pnpm'
+      ? 'pnpm add -D @goobits/sherpa'
+      : packageManager === 'yarn'
+        ? 'yarn add -D @goobits/sherpa'
+        : packageManager === 'bun'
+          ? 'bun add -D @goobits/sherpa'
+          : 'npm install -D @goobits/sherpa'
+
+  try {
+    console.log(`Installing @goobits/sherpa locally with ${packageManager}...`)
+    execSync(installCommand, { cwd, stdio: 'pipe' })
+  } catch {
+    console.warn(`Warning: Failed to install @goobits/sherpa with ${packageManager}.`)
+    return false
+  }
+
+  return true
+}
+
 function quoteArg(arg: string): string {
   if (/^[A-Za-z0-9_./:@-]+$/.test(arg)) {
     return arg
@@ -228,6 +289,13 @@ function setupClaudeHooks(cwd: string, force: boolean): void {
 function setupMcpConfig(cwd: string, force: boolean): void {
   const mcpPath = join(cwd, '.mcp.json')
   const settingsPath = join(cwd, '.claude/settings.local.json')
+
+  if (!getLocalReviewerPath(cwd) && !commandExists('reviewer')) {
+    if (installLocalSherpa(cwd)) {
+      console.log('Installed @goobits/sherpa for portable MCP config.')
+    }
+  }
+
   const mcpCommand = getMcpCommand(cwd)
 
   // 1. Clean up stale MCP config from settings.local.json (wrong location)
