@@ -132,6 +132,19 @@ function getPackageManager(cwd: string): 'pnpm' | 'npm' | 'yarn' | 'bun' | null 
     return 'bun'
   }
 
+  if (commandExists('npm')) {
+    return 'npm'
+  }
+  if (commandExists('pnpm')) {
+    return 'pnpm'
+  }
+  if (commandExists('yarn')) {
+    return 'yarn'
+  }
+  if (commandExists('bun')) {
+    return 'bun'
+  }
+
   return null
 }
 
