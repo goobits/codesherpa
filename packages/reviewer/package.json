@@ -7,6 +7,7 @@
   },
   "main": "dist/index.js",
   "scripts": {
+    "prebuild": "pnpm --filter @goobits/sherpa-core build",
     "build": "tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
