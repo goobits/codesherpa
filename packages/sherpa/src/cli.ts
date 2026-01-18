@@ -36,6 +36,7 @@ Usage:
   sherpa init     Set up repo (husky, lint-staged, gitleaks, claude hooks)
   sherpa pre      PreToolUse hook (blocks dangerous commands)
   sherpa post     PostToolUse hook (offloads large output)
+  sherpa reviewer Start MCP reviewer server (used by AI coding tools)
   sherpa daemon   Start persistent daemon for faster hook responses
   sherpa status   Show LLM provider status and rate limits
 
@@ -46,6 +47,7 @@ Options:
 Examples:
   sherpa init              # First-time setup
   sherpa init --force      # Overwrite existing config
+  sherpa reviewer          # Start MCP server (stdio)
   sherpa daemon &          # Start daemon in background
   sherpa status            # Check provider quotas
 `)
@@ -64,13 +66,26 @@ try {
 		case 'post':
 			runPost()
 			break
+		case 'reviewer': {
+			// Start the MCP reviewer server
+			// The reviewer is bundled into dist/reviewer/index.js by esbuild
+			import('child_process').then(({ spawn }) => {
+				const reviewerPath = join(__dirname, 'reviewer', 'index.js')
+				const child = spawn('node', [reviewerPath], {
+					stdio: 'inherit',
+					env: process.env
+				})
+				child.on('exit', (code) => process.exit(code ?? 0))
+			})
+			break
+		}
 		case 'daemon':
 			// Dynamic import to avoid loading daemon code unless needed
 			import('./daemon.js')
 			break
 		case 'status':
 			// Dynamic import for status command
-			import('./commands/status.js').then(m => m.runStatus())
+			import('./commands/status.js').then((m) => m.runStatus())
 			break
 		case '--help':
 		case '-h':
@@ -82,12 +97,12 @@ try {
 			console.log(getVersion())
 			break
 		default:
-			console.error(`Unknown command: ${ command }`)
+			console.error(`Unknown command: ${command}`)
 			console.error('Run "sherpa --help" for usage')
 			process.exit(1)
 	}
-} catch(error) {
+} catch (error) {
 	const message = error instanceof Error ? error.message : String(error)
-	console.error(`Error: ${ message }`)
+	console.error(`Error: ${message}`)
 	process.exit(1)
 }

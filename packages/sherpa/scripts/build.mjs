@@ -17,14 +17,29 @@ const external = [
 	'tiktoken'
 ]
 
+// Build 1: CLI and library with code splitting (for npm package)
 await build({
 	entryPoints: {
 		cli: join(root, 'src', 'cli.ts'),
 		index: join(root, 'src', 'index.ts'),
-		'reviewer/index': join(root, '..', 'reviewer', 'src', 'index.ts')
 	},
 	bundle: true,
 	splitting: true,
+	platform: 'node',
+	format: 'esm',
+	target: 'es2022',
+	sourcemap: true,
+	outdir: distDir,
+	external
+})
+
+// Build 2: Standalone reviewer bundle (self-contained, for ~/.local/share installation)
+await build({
+	entryPoints: {
+		'reviewer/index': join(root, '..', 'reviewer', 'src', 'index.ts')
+	},
+	bundle: true,
+	splitting: false,  // No splitting = single self-contained file
 	platform: 'node',
 	format: 'esm',
 	target: 'es2022',
