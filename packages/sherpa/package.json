@@ -1,6 +1,6 @@
 {
 	"name": "@goobits/sherpa",
-	"version": "1.0.9",
+	"version": "1.0.10",
 	"description": "CLI guard for safer AI coding - blocks dangerous bash commands and manages output context",
 	"type": "module",
 	"bin": {
