@@ -1,98 +1,27 @@
 # mcp-sherpa
 
-MCP servers and Claude Code hooks for safer, smarter AI coding.
+Monorepo for the sherpa CLI guard and the reviewer MCP server.
 
-## Quick Start (NPX)
+## Repository layout
+
+- `packages/sherpa` - CLI (`sherpa`) and Claude Code hooks
+- `packages/reviewer` - MCP server (`reviewer`)
+- `packages/core` - shared utilities (LLM, git, file helpers)
+
+## Use in another project
 
 ```bash
-# 1. Set up your project
 cd ~/your-project
 npx @goobits/sherpa init
 
-# (Recommended) Keep .mcp.json portable
-pnpm add -D @goobits/sherpa
-
-# 2. Add your API key
 echo "CEREBRAS_API_KEY=..." >> .env
-
-# 3. Restart Claude Code
+echo "GROQ_API_KEY=..." >> .env
+echo "OPENAI_API_KEY=..." >> .env
 ```
 
-That's it! After restart, you'll have:
+Restart Claude Code after init.
 
-- **Hooks**: Block dangerous commands, manage large outputs
-- **MCP**: AI-powered code review via Cerebras
-
-## What Gets Configured
-
-### Project Files Created
-
-| File                          | Purpose               |
-| ----------------------------- | --------------------- |
-| `.claude/settings.local.json` | Claude Code hooks     |
-| `.claude/guard.json`          | Guard configuration   |
-| `.mcp.json`                   | MCP server (reviewer) |
-| `.husky/pre-commit`           | Git pre-commit hooks  |
-| `.lintstagedrc.json`          | Lint staged files     |
-
-### Claude Code Hooks
-
-Configured in `.claude/settings.local.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "sherpa pre" }]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "sherpa post" }]
-      }
-    ]
-  }
-}
-```
-
-- **sherpa pre**: Blocks dangerous bash commands (rm -rf, curl|bash, etc.)
-- **sherpa post**: Offloads large outputs to `.claude/scratch/`
-
-### MCP Server
-
-Configured in `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "reviewer": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["./node_modules/@goobits/sherpa/dist/reviewer/index.js"]
-    }
-  }
-}
-```
-
-Tools available:
-
-- `review` - Review code, diffs, or prompts with line-number citations
-
-Examples:
-
-```
-/review **/*.js
-/review **/*.js --dry
-/review --diff
-/review --diff --base main --path packages/reviewer
-/review --ask "How does the auth flow work?"
-/review --ask "Summarize this repo" --dry
-```
-
-## CLI Commands
+## CLI commands
 
 ```bash
 sherpa init          # Set up repo (hooks, MCP, husky, lint-staged)
@@ -103,50 +32,38 @@ sherpa daemon        # Start persistent daemon for faster responses
 sherpa status        # Show LLM provider status
 ```
 
-## Guard Config
+## MCP server config (this repo)
 
-Edit `.claude/guard.json`:
+`.mcp.json` is wired to the local build output:
 
 ```json
 {
-  "maxTokens": 2000,
-  "previewTokens": 500,
-  "scratchDir": ".claude/scratch",
-  "maxAgeMinutes": 60,
-  "maxScratchSizeMB": 50
+	"mcpServers": {
+		"reviewer": {
+			"type": "stdio",
+			"command": "node",
+			"args": ["./packages/reviewer/dist/index.js"]
+		}
+	}
 }
 ```
 
-## Development
+## Development (this repo)
 
 ```bash
 pnpm install
 pnpm build
+pnpm dev
+pnpm typecheck
 ```
 
-## Local install
+## Local install (this repo)
 
 ```bash
-git clone https://github.com/goobits/mcp-sherpa.git
-cd mcp-sherpa
 ./install.sh           # installs to ~/.local/bin (no sudo)
 ./install.sh --system  # installs to /usr/local/bin (uses sudo if needed)
+./install.sh --init    # install + run sherpa init in the current dir
 ```
-
-## Troubleshooting
-
-### MCP server not connecting
-
-1. Check `.mcp.json` has `"type": "stdio"`
-2. Ensure paths are project-relative or the `reviewer` binary is on PATH
-3. Restart Claude Code completely
-4. Run `claude mcp list` to verify
-
-### Hooks not working
-
-1. Check `.claude/settings.local.json` format
-2. Ensure `sherpa` is in PATH
-3. Run `/doctor` in Claude Code
 
 ## License
 
