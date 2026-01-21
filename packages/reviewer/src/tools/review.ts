@@ -1,5 +1,12 @@
-import { chat, findFiles, getDiff, type Provider, readFilesWithLimit } from '@goobits/sherpa-core'
-import { statSync } from 'fs'
+import {
+  chat,
+  findFiles,
+  getDiff,
+  isDirectoryAsync,
+  isFileAsync,
+  readFilesWithLimitAsync,
+  type Provider
+} from '@goobits/sherpa-core'
 
 import {
   ARCHITECTURE_SYSTEM,
@@ -128,16 +135,17 @@ export async function review(args: ReviewArgs): Promise<string> {
     }
 
     try {
-      const stat = statSync(p)
-      if (stat.isFile()) {
+      if (await isFileAsync(p)) {
         filesToReview.push(p)
-      } else if (stat.isDirectory()) {
+      } else if (await isDirectoryAsync(p)) {
         const pattern = `${p}/**/*`
         const matched = await findFiles(pattern, { codeOnly: true })
         filesToReview.push(...matched)
+      } else {
+        return `Path not found or not a file/directory: ${p}`
       }
     } catch {
-      return `Path not found: ${p}`
+      return `Error processing path: ${p}`
     }
   }
 
@@ -145,7 +153,7 @@ export async function review(args: ReviewArgs): Promise<string> {
     return 'No code files found to review.'
   }
 
-  const { files, truncated } = readFilesWithLimit(filesToReview)
+  const { files, truncated } = await readFilesWithLimitAsync(filesToReview)
 
   let formattedContent = files.join('\n')
   if (truncated > 0) {

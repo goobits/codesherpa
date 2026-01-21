@@ -3,6 +3,8 @@
  */
 
 import { readFileSync, statSync } from 'fs'
+import { readFile, stat } from 'fs/promises'
+import { readFile, stat } from 'fs/promises'
 import { glob } from 'glob'
 
 import { filterIgnored } from './git.js'
@@ -118,6 +120,80 @@ export function readFilesWithLimit(
 export function isFile(path: string): boolean {
 	try {
 		return statSync(path).isFile()
+	} catch {
+		return false
+	}
+}
+
+/**
+ * Format file content with line numbers (async)
+ */
+export async function formatWithLineNumbersAsync(path: string): Promise<string> {
+	const content = await readFile(path, 'utf8')
+	const lines = content.split('\n')
+	const totalLines = lines.length
+
+	const numbered = lines.map(
+		(line, i) => `${String(i + 1).padStart(4)} | ${line}`
+	)
+
+	return `
+--- BEGIN FILE: ${path} (lines 1-${totalLines}) ---
+${numbered.join('\n')}
+--- END FILE: ${path} ---
+`
+}
+
+/**
+ * Read multiple files with size limit (async)
+ */
+export async function readFilesWithLimitAsync(
+	paths: string[],
+	maxBytes: number = 120_000
+): Promise<{ files: string[]; truncated: number }> {
+	const files: string[] = []
+	let totalSize = 0
+	let truncated = 0
+
+	for (const path of paths) {
+		try {
+			await stat(path) // Verify file exists and is readable
+			const formatted = await formatWithLineNumbersAsync(path)
+
+			if (totalSize + formatted.length > maxBytes) {
+				truncated = paths.length - files.length
+				break
+			}
+
+			files.push(formatted)
+			totalSize += formatted.length
+		} catch {
+			// Skip unreadable files
+		}
+	}
+
+	return { files, truncated }
+}
+
+/**
+ * Check if path is a file (async)
+ */
+export async function isFileAsync(path: string): Promise<boolean> {
+	try {
+		const stats = await stat(path)
+		return stats.isFile()
+	} catch {
+		return false
+	}
+}
+
+/**
+ * Check if path is a directory (async)
+ */
+export async function isDirectoryAsync(path: string): Promise<boolean> {
+	try {
+		const stats = await stat(path)
+		return stats.isDirectory()
 	} catch {
 		return false
 	}
