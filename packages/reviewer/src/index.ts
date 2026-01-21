@@ -15,6 +15,8 @@ import {
 import { review, type ReviewArgs, reviewTool } from "./tools/review.js";
 import { tree, type TreeArgs, treeTool } from "./tools/tree.js";
 
+process.stdin.resume();
+
 // Create MCP server
 const server = new Server(
   {
@@ -222,8 +224,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 // Start server
 async function main() {
-  process.stdin.resume();
-  setInterval(() => {}, 60_000);
   const transport = new StdioServerTransport();
   await server.connect(transport);
   // Note: No console output - it interferes with MCP protocol
