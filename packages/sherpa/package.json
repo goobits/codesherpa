@@ -35,7 +35,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/goobits/sherpa.git",
+    "url": "git+https://github.com/goobits/sherpa.git",
     "directory": "packages/sherpa"
   },
   "dependencies": {
