@@ -39,6 +39,7 @@
     "directory": "packages/sherpa"
   },
   "dependencies": {
+    "@goobits/sherpa-core": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "bash-parser": "^0.5.0",
     "glob": "^10.4.0",
@@ -47,7 +48,6 @@
     "tiktoken": "^1.0.0"
   },
   "devDependencies": {
-    "@goobits/sherpa-core": "workspace:*",
     "esbuild": "^0.23.0",
     "vitest": "^2.0.0"
   }
