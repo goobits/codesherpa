@@ -1,5 +1,6 @@
 {
   "name": "mcp-sherpa",
+  "license": "UNLICENSED",
   "private": true,
   "type": "module",
   "scripts": {
