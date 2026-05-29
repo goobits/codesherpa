@@ -1,4 +1,4 @@
-# sherpa
+# Sherpa
 
 AI-powered code review and safety tools for Claude Code.
 
@@ -62,4 +62,4 @@ packages/
 
 ## License
 
-MIT
+Proprietary. Copyright (c) 2026 Goobits. All rights reserved. See [`LICENSE`](./LICENSE).
